@@ -16,7 +16,7 @@ Hyperkube provides:
 - A Fabric reference network, equivalent to [test-network](url), suitable for local application development.
 - A focused environment for development and management of [external chaincode](url) smart contracts. 
 
-![hyper-kube](images/hyper-kube.png)
+![hyper-kube](docs/images/hyper-kube.png)
 
 ## Objectives:
 
@@ -47,7 +47,7 @@ providing a practical gateway for interacting with a remote Fabric network.  Wit
 of this project to **align** with the operator pattern, such that the routines and functionality implemented by `fabctl` 
 may be refactored into a first-class controller and collection of K8s CRDs.
 
-![fabctl.png](images/fabctl.png)
+![fabctl.png](docs/images/fabctl.png)
 
 The general structure of `fabctl` divides Fabric administration activities into three functional sub-areas: 
 - `network` 
