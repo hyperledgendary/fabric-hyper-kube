@@ -20,8 +20,8 @@ kubectl apply -f src/test/resources/kube/pvc-fabric.yaml
 
 ### Test Network 
 
-- TODO: introduce _fabric network descriptor_ as a local config resource, and inflate the cluster dynamically.
 - TODO: don't run cryptogen in the cluster.  Set up a CA 
+- TODO: introduce an _MSP context_ and load into k8s secrets/configmaps 
 
 ```shell 
 kubectl -n test-network create configmap fabric-config --from-file=config/
