@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import static java.util.Map.entry;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Build up a channel and join peers in a single flow.
@@ -41,7 +42,6 @@ public class CreateAndJoinChannelTest extends TestBase
         }
     }
 
-    @Data
     private static class PeerCommand extends FabricCommand
     {
         public PeerCommand(final String... command)
@@ -50,7 +50,6 @@ public class CreateAndJoinChannelTest extends TestBase
         }
     }
 
-    @Data
     private static class ConfigTXGenCommand extends FabricCommand
     {
         public ConfigTXGenCommand(final String... command)
@@ -123,6 +122,8 @@ public class CreateAndJoinChannelTest extends TestBase
                     "-profile",               "TwoOrgsChannel",
                     "-outputCreateChannelTx", "/var/hyperledger/fabric/channel-artifacts/mychannel.tx");
 
+        // todo: crypto-config is not aligned with fabric/config paths between peer and configtxgen commands.
+        // Fix this by generating the crypto spec locally, mounting an msp / identity into the context.
         final Map<String,String> txgenContext = Map.of("FABRIC_CFG_PATH", "/var/hyperledger/fabric");
 
         assertEquals(0, executeCommand(configChannel, txgenContext));
@@ -210,44 +211,62 @@ public class CreateAndJoinChannelTest extends TestBase
                                  .withName("fabric-volume")
                                  .withMountPath("/var/hyperledger/fabric")
                                  .build());
-        volumeMounts.add(new VolumeMountBuilder()
-                                 .withName("fabric-config")
-                                 .withMountPath("/var/hyperledger/fabric/config")
-                                 .build());
+
+        // oof: this is rough.  configtxgen and peer commands need the crypto-spec and fabric config in slightly different folders.
+        if (command instanceof PeerCommand)
+        {
+            volumeMounts.add(new VolumeMountBuilder()
+                                     .withName("fabric-config")
+                                     .withMountPath("/var/hyperledger/fabric/config")
+                                     .build());
+        }
+        else if (command instanceof ConfigTXGenCommand)
+        {
+            volumeMounts.add(new VolumeMountBuilder()
+                                     .withName("fabric-config")
+                                     .withMountPath("/var/hyperledger/fabric/configtx.yaml")
+                                     .withSubPath("configtx.yaml")
+                                     .build());
+        }
+        else
+        {
+            fail("Unknown command type: " + command);
+        }
+
 
         // @formatter:off
         return new JobBuilder()
                 .withApiVersion("batch/v1")
                 .withNewMetadata()
-                .withGenerateName("peer-job-")
+                    .withGenerateName("peer-job-")
                 .endMetadata()
                 .withNewSpec()
-                .withBackoffLimit(0)
-                .withCompletions(1)
-                .withNewTemplate()
-                .withNewSpec()
-                .withRestartPolicy("Never")
-                .addNewContainer()
-                .withName("main")
-                .withImage(command.getImage() + ":" + command.getLabel())
-                .withCommand(command.command)
-                .withEnv(env)
-                .withVolumeMounts(volumeMounts)
-                .endContainer()
-                .addNewVolume()
-                .withName("fabric-volume")
-                .withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSourceBuilder()
-                                                   .withClaimName("fabric")
-                                                   .build())
-                .endVolume()
-                .addNewVolume()
-                .withName("fabric-config")
-                .withConfigMap(new ConfigMapVolumeSourceBuilder()
-                                       .withName("fabric-config")
-                                       .build())
-                .endVolume()
-                .endSpec()
-                .endTemplate()
+                    .withBackoffLimit(0)
+                    .withCompletions(1)
+                    .withNewTemplate()
+                        .withNewSpec()
+                            .withRestartPolicy("Never")
+                            .addNewContainer()
+                                .withName("main")
+                                .withImage(command.getImage() + ":" + command.getLabel())
+                                .withCommand(command.command)
+                                .withEnv(env)
+                                .withVolumeMounts(volumeMounts)
+                            .endContainer()
+                            .addNewVolume()
+                                .withName("fabric-volume")
+                                .withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSourceBuilder()
+                                                                   .withClaimName("fabric")
+                                                                   .build())
+                            .endVolume()
+                            .addNewVolume()
+                                .withName("fabric-config")
+                                .withConfigMap(new ConfigMapVolumeSourceBuilder()
+                                                       .withName("fabric-config")
+                                                       .build())
+                            .endVolume()
+                        .endSpec()
+                    .endTemplate()
                 .endSpec()
                 .build();
         // @formatter:on
