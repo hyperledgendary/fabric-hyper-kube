@@ -1,17 +1,13 @@
 package org.hyperledger.fabric.fabctl;
 
-import io.fabric8.kubernetes.api.model.*;
-import io.fabric8.kubernetes.api.model.batch.v1.Job;
-import io.fabric8.kubernetes.api.model.batch.v1.JobBuilder;
 import java.util.*;
-import java.util.Map.Entry;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.hyperledger.fabric.fabctl.command.ConfigTXGenCommand;
+import org.hyperledger.fabric.fabctl.command.PeerCommand;
 import org.junit.jupiter.api.Test;
 
 import static java.util.Map.entry;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Build up a channel and join peers in a single flow.
@@ -20,43 +16,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class CreateAndJoinChannelTest extends TestBase
 {
     private static final String CHANNEL = "mychannel";
-
-    // still stirring the pot. .. don't refactor this yet.
-    @Data
-    private static class FabricCommand
-    {
-        public final String image;
-        public final String label = "2.3.2";
-        public final String[] command;
-
-        public FabricCommand(final String image, final String[] command)
-        {
-            this.image = image;
-            this.command = command;
-        }
-
-        public FabricCommand()
-        {
-            this.image = null;
-            this.command = null;
-        }
-    }
-
-    private static class PeerCommand extends FabricCommand
-    {
-        public PeerCommand(final String... command)
-        {
-            super("hyperledger/fabric-peer", command);
-        }
-    }
-
-    private static class ConfigTXGenCommand extends FabricCommand
-    {
-        public ConfigTXGenCommand(final String... command)
-        {
-            super("hyperledger/fabric-tools", command);
-        }
-    }
 
     /**
      * In a future pass, pull on a thread to load the peer env context from a properties file / yaml / json / resource bundle / etc. into a real struct, not a simple map.
@@ -126,7 +85,7 @@ public class CreateAndJoinChannelTest extends TestBase
         // Fix this by generating the crypto spec locally, mounting an msp / identity into the context.
         final Map<String,String> txgenContext = Map.of("FABRIC_CFG_PATH", "/var/hyperledger/fabric");
 
-        assertEquals(0, executeCommand(configChannel, txgenContext));
+        assertEquals(0, execute(configChannel, txgenContext));
 
         //
         // create the channel
@@ -141,7 +100,7 @@ public class CreateAndJoinChannelTest extends TestBase
                                 "--tls",
                                 "--cafile", "/var/hyperledger/fabric/crypto-config/ordererOrganizations/example.com/orderers/orderer1.example.com/tls/ca.crt");
 
-        assertEquals(0, executeCommand(createChannel, ORG1_PEER1_CONTEXT));
+        assertEquals(0, execute(createChannel, ORG1_PEER1_CONTEXT));
 
 
         //
@@ -156,7 +115,7 @@ public class CreateAndJoinChannelTest extends TestBase
                                 "--tls",
                                 "--cafile", "/var/hyperledger/fabric/crypto-config/ordererOrganizations/example.com/orderers/orderer1.example.com/tls/ca.crt");
 
-        assertEquals(0, executeCommand(updateChannel, ORG1_PEER1_CONTEXT));
+        assertEquals(0, execute(updateChannel, ORG1_PEER1_CONTEXT));
 
 
         //
@@ -169,106 +128,8 @@ public class CreateAndJoinChannelTest extends TestBase
 
         for (Map<String, String> context : PEER_CONTEXTS)
         {
-            assertEquals(0, executeCommand(joinChannel, context));
+            assertEquals(0, execute(joinChannel, context));
         }
     }
 
-    private int executeCommand(final FabricCommand command, final Map<String,String> context) throws Exception
-    {
-        log.info("Launching command:\n{}", yamlMapper.writeValueAsString(command));
-        log.info("With context:\n{}", yamlMapper.writeValueAsString(context));
-
-        final Job template = buildRemoteJob(command, context);
-
-        return runJob(template);
-    }
-
-    /**
-     * Still not ideal but keep this in the local test...  what's the mechanism for passing in the config yaml
-     * and block residue on the PVC / volume mount?
-     * <p>
-     * More importantly:  how will we set the peer context via a config map to specify the proper crypto config
-     * and MSP assets?
-     * <p>
-     * "context" here is just a k/v env map.  But this is incorrect... the "context" for a remote peer command
-     * also needs to specify the _identity_ (msp) of the activity.  This includes an env scope as well as a set
-     * of crypto assets, to be mounted or referenced dynamically as a set of kube secrets and/or config maps.
-     */
-    private Job buildRemoteJob(final FabricCommand command, final Map<String,String> context)
-    {
-        final List<EnvVar> env = new ArrayList<>();
-        for (Entry<String, String> e : context.entrySet())
-        {
-            env.add(new EnvVarBuilder()
-                            .withName(e.getKey())
-                            .withValue(e.getValue())
-                            .build());
-        }
-
-        // todo: set the crypto / identity context for the MSP via reference to "connection profile"
-        final List<VolumeMount> volumeMounts = new ArrayList<>();
-        volumeMounts.add(new VolumeMountBuilder()
-                                 .withName("fabric-volume")
-                                 .withMountPath("/var/hyperledger/fabric")
-                                 .build());
-
-        // oof: this is rough.  configtxgen and peer commands need the crypto-spec and fabric config in slightly different folders.
-        if (command instanceof PeerCommand)
-        {
-            volumeMounts.add(new VolumeMountBuilder()
-                                     .withName("fabric-config")
-                                     .withMountPath("/var/hyperledger/fabric/config")
-                                     .build());
-        }
-        else if (command instanceof ConfigTXGenCommand)
-        {
-            volumeMounts.add(new VolumeMountBuilder()
-                                     .withName("fabric-config")
-                                     .withMountPath("/var/hyperledger/fabric/configtx.yaml")
-                                     .withSubPath("configtx.yaml")
-                                     .build());
-        }
-        else
-        {
-            fail("Unknown command type: " + command);
-        }
-
-
-        // @formatter:off
-        return new JobBuilder()
-                .withApiVersion("batch/v1")
-                .withNewMetadata()
-                    .withGenerateName("peer-job-")
-                .endMetadata()
-                .withNewSpec()
-                    .withBackoffLimit(0)
-                    .withCompletions(1)
-                    .withNewTemplate()
-                        .withNewSpec()
-                            .withRestartPolicy("Never")
-                            .addNewContainer()
-                                .withName("main")
-                                .withImage(command.getImage() + ":" + command.getLabel())
-                                .withCommand(command.command)
-                                .withEnv(env)
-                                .withVolumeMounts(volumeMounts)
-                            .endContainer()
-                            .addNewVolume()
-                                .withName("fabric-volume")
-                                .withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSourceBuilder()
-                                                                   .withClaimName("fabric")
-                                                                   .build())
-                            .endVolume()
-                            .addNewVolume()
-                                .withName("fabric-config")
-                                .withConfigMap(new ConfigMapVolumeSourceBuilder()
-                                                       .withName("fabric-config")
-                                                       .build())
-                            .endVolume()
-                        .endSpec()
-                    .endTemplate()
-                .endSpec()
-                .build();
-        // @formatter:on
-    }
 }

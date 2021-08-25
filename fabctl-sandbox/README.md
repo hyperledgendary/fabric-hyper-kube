@@ -26,26 +26,12 @@ kubectl apply -f src/test/resources/kube/pvc-fabric.yaml
 
 ```shell 
 kubectl -n test-network create configmap fabric-config --from-file=config/
+kubectl -n test-network create -f src/test/resources/kube/job-crypto-config.yaml
 ```
+(wait for this job to complete...)
 
 ```shell
-kubectl create -f src/test/resources/kube/job-crypto-config.yaml
-kubectl create -f src/test/resources/kube/job-orderer-genesis.yaml
-kubectl create -f src/test/resources/kube/job-update-org1-anchor-peers.yaml
-kubectl create -f src/test/resources/kube/job-update-org2-anchor-peers.yaml
-```
-
-```shell
-kubectl apply -f src/test/resources/kube/orderer1.yaml
-kubectl apply -f src/test/resources/kube/orderer2.yaml
-kubectl apply -f src/test/resources/kube/orderer3.yaml
-```
-
-```shell
-kubectl apply -f src/test/resources/kube/org1-peer1.yaml
-kubectl apply -f src/test/resources/kube/org1-peer2.yaml
-kubectl apply -f src/test/resources/kube/org2-peer1.yaml
-kubectl apply -f src/test/resources/kube/org2-peer2.yaml
+./gradlew test --tests InitFabricNetworkTest
 ```
 
 

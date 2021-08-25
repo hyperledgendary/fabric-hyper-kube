@@ -7,7 +7,6 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  namespace: test-network
   generateName: crypto-config-
 spec:
   backoffLimit: 1
