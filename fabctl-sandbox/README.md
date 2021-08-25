@@ -51,6 +51,13 @@ kubectl apply -f src/test/resources/kube/org2-peer2.yaml
 
 ### Channel, Chaincode, Application 
 
+Run the test case routines interactively in an IDE.   Or: 
+
+```shell
+./gradlew test --tests CreateAndJoinChannelTest 
+```
+
+
 Run the test case routines interactively in an IDE / etc. 
 
 ## Teardown 
