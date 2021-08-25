@@ -22,13 +22,13 @@ kubectl apply -f src/test/resources/kube/pvc-fabric.yaml
 
 - TODO: introduce _fabric network descriptor_ as a local config resource, and inflate the cluster dynamically.
 - TODO: don't run cryptogen in the cluster.  Set up a CA 
-- TODO: inflate the cluster from a test case, not copy/paste README
 
 ```shell 
 kubectl -n test-network create configmap fabric-config --from-file=config/
 kubectl -n test-network create -f src/test/resources/kube/job-crypto-config.yaml
+
+kubectl -n test-network wait --for=condition=complete --timeout=120s job/job-crypto-config
 ```
-(wait for this job to complete...)
 
 ```shell
 ./gradlew test --tests InitFabricNetworkTest
