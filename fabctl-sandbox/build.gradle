@@ -1,0 +1,29 @@
+plugins {
+    id 'java'
+}
+
+group 'org.hyperledger.fabric'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    implementation 'io.fabric8:kubernetes-client:5.7.0'
+    implementation 'org.slf4j:slf4j-api:1.7.+'
+    implementation 'ch.qos.logback:logback-classic:1.2.+'
+
+    compileOnly "org.projectlombok:lombok:1.18.20"
+    testCompileOnly "org.projectlombok:lombok:1.18.20"
+    annotationProcessor "org.projectlombok:lombok:1.18.20"
+    testAnnotationProcessor "org.projectlombok:lombok:1.18.20"
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+}
+
+test {
+    useJUnitPlatform()
+}
