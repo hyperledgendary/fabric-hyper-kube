@@ -347,8 +347,8 @@ public class InitFabricNetworkTest extends TestBase
 
     /**
      * TODO: refactor, please
-     * Please refactor this and the orderer setup above.  Both are virtually identical other than the
-     * port mappings exposed by the container and the Docker image.
+     * TODO: refactor, please - just load from a template from the resource bundle and substitute peer name and scope env.
+     * TODO: refactor, per orderer deployment above.  Both are identical other than docker image, port maps, and scope env.
      */
     private void launchPeer(final PeerConfig config) throws Exception
     {
@@ -380,6 +380,10 @@ public class InitFabricNetworkTest extends TestBase
                               new VolumeMountBuilder()
                                       .withName("fabric-config")
                                       .withMountPath("/var/hyperledger/fabric/config")
+                                      .build(),
+                              new VolumeMountBuilder()
+                                      .withName("ccs-builder")
+                                      .withMountPath("/var/hyperledger/fabric/ccs-builder/bin")
                                       .build());
 
         //
@@ -407,45 +411,66 @@ public class InitFabricNetworkTest extends TestBase
         //
         // Please stop using the builder to construct these with this pattern.  It's ugly, excessive, and can be improved.
         //
+        // All this needs to do is load a yaml template from the resource bundle and substitute config.getName() + env.
+        //
         // @formatter:off
         final Deployment template =
                 new DeploymentBuilder()
                         .withApiVersion("apps/v1")
                         .withNewMetadata()
-                        .withName(config.getName())
+                            .withName(config.getName())
                         .endMetadata()
                         .withNewSpec()
-                        .withReplicas(1)
-                        .withNewSelector()
-                        .withMatchLabels(Map.of("app", config.getName()))
-                        .endSelector()
-                        .withNewTemplate()
-                        .withNewMetadata()
-                        .withLabels(Map.of("app", config.getName()))
-                        // todo: other labels here.
-                        .endMetadata()
-                        .withNewSpec()
-                        .addNewContainer()
-                        .withName("main")
-                        .withImage("hyperledger/fabric-peer:" + FABRIC_VERSION)
-                        .withEnv(env)
-                        .withVolumeMounts(volumeMounts)
-                        .withPorts(containerPorts)
-                        .endContainer()
-                        .addNewVolume()
-                        .withName("fabric-volume")
-                        .withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSourceBuilder()
-                                                           .withClaimName("fabric")
-                                                           .build())
-                        .endVolume()
-                        .addNewVolume()
-                        .withName("fabric-config")
-                        .withConfigMap(new ConfigMapVolumeSourceBuilder()
-                                               .withName("fabric-config")
-                                               .build())
-                        .endVolume()
-                        .endSpec()
-                        .endTemplate()
+                            .withReplicas(1)
+                            .withNewSelector()
+                            .withMatchLabels(Map.of("app", config.getName()))
+                            .endSelector()
+                            .withNewTemplate()
+                                .withNewMetadata()
+                                    .withLabels(Map.of("app", config.getName()))
+                                // todo: other labels here.
+                                .endMetadata()
+                                .withNewSpec()
+
+                                    .addNewContainer()
+                                        .withName("main")
+                                        .withImage("hyperledger/fabric-peer:" + FABRIC_VERSION)
+                                        .withEnv(env)
+                                        .withVolumeMounts(volumeMounts)
+                                        .withPorts(containerPorts)
+                                    .endContainer()
+
+                                    // this copies the ccs-builder binaries into the peer image for external chaincode.
+                                    .addNewInitContainer()
+                                        .withName("fabric-ccs-builder")
+                                        .withImage(CCS_BUILDER_IMAGE)
+                                        .withImagePullPolicy("IfNotPresent")
+                                        .withCommand("sh", "-c")
+                                        .withArgs("cp /go/bin/* /var/hyperledger/fabric/ccs-builder/bin/")
+                                        .withVolumeMounts(Arrays.asList(new VolumeMountBuilder()
+                                                                                .withName("ccs-builder")
+                                                                                .withMountPath("/var/hyperledger/fabric/ccs-builder/bin")
+                                                                                .build()))
+                                    .endInitContainer()
+
+                                    .addNewVolume()
+                                        .withName("fabric-volume")
+                                        .withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSourceBuilder()
+                                                                           .withClaimName("fabric")
+                                                                           .build())
+                                    .endVolume()
+                                    .addNewVolume()
+                                        .withName("fabric-config")
+                                        .withConfigMap(new ConfigMapVolumeSourceBuilder()
+                                                               .withName("fabric-config")
+                                                               .build())
+                                    .endVolume()
+                                    .addNewVolume()
+                                        .withName("ccs-builder")
+                                        .withEmptyDir(new EmptyDirVolumeSource())
+                                    .endVolume()
+                                .endSpec()
+                            .endTemplate()
                         .endSpec()
                         .build();
         // @formatter:on
