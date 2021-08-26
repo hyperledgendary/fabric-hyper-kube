@@ -14,7 +14,7 @@ routines may be refactored into CLIs, service APIs, or eventually into a fully-f
 
 ## Quickstart 
 
-### Kube setup
+### Kubernetes
 
 ```shell
 kind create cluster
@@ -26,37 +26,28 @@ kubectl apply -f src/test/resources/kube/pv-fabric.yaml
 kubectl apply -f src/test/resources/kube/pvc-fabric.yaml
 ```
 
-### Test Network 
+### Test Network
 
 - TODO: don't run cryptogen in the cluster.  Set up a CA 
 - TODO: introduce an _MSP context_ and load into k8s secrets/configmaps 
 
-```shell 
+```shell
 kubectl -n test-network create configmap fabric-config --from-file=config/
 kubectl -n test-network create -f src/test/resources/kube/job-crypto-config.yaml
 kubectl -n test-network wait --for=condition=complete --timeout=120s job/job-crypto-config
 ```
 
-Create a three-orderer, two-org, quad-peer network: 
 ```shell
-./gradlew test --tests InitFabricNetworkTest
-```
+./gradlew test --tests InitFabricNetworkTest      # network.sh up 
 
+./gradlew test --tests CreateAndJoinChannelTest   # network.sh createChannel
 
-### Channel, Chaincode, Application 
-
-Create `mychannel` and join to all peers: 
-```shell
-./gradlew test --tests CreateAndJoinChannelTest 
-```
-
-Deploy `asset-transfer-basic` running in CCaaS mode: 
-```shell
-./gradlew test --tests ChaincodeSandboxTest
+./gradlew test --tests ChaincodeSandboxTest       # network.sh deployCC 
 ```
 
 ## Teardown 
 
+todo: tear down the network, pvc contents, etc. without destroying the cluster. 
 ```shell
 kind delete cluster
 ```

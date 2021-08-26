@@ -167,7 +167,7 @@ public class ChaincodeSandboxTest extends TestBase
         private boolean tls_required;
     }
 
-    @Test
+    //@Test
     public void testPrettyPrintDescriptor() throws Exception
     {
         final ChaincodeDescriptor descriptor = describeAssetTransferBasic();
@@ -201,7 +201,7 @@ public class ChaincodeSandboxTest extends TestBase
      * This would be useful for running a job in k8s to convert the chaincode descriptor into a cc.tar.gz
      * file on a volume share where it may be installed onto a peer.
      */
-    @Test
+    //@Test
     public void testLoadDescriptorAsConfigMap() throws Exception
     {
         final ChaincodeDescriptor descriptor = describeAssetTransferBasic();
@@ -240,7 +240,7 @@ public class ChaincodeSandboxTest extends TestBase
     /**
      * Here's another flavor: load a configmap with connection.json and metadata.json
      */
-    @Test
+    //@Test
     public void testLoadPackageFilesAsConfigMap() throws Exception
     {
         final ChaincodeDescriptor descriptor = describeAssetTransferBasic();
@@ -327,7 +327,7 @@ public class ChaincodeSandboxTest extends TestBase
     /**
      * Here's another flavor: create cc.tar.gz and mount it as a configmap.
      */
-    @Test
+    //@Test
     public void testCreatePackageArchiveAsConfigMap() throws Exception
     {
         final ChaincodeDescriptor descriptor = describeAssetTransferBasic();
@@ -730,96 +730,31 @@ public class ChaincodeSandboxTest extends TestBase
         log.info("Created service:\n{}", service);
 
         //
-        // Wait for the deployment to reach ready state
+        // Wait for the deployment to come up before continuing.
         //
-        log.info("Waiting for deployment to reach Ready status");
-        final long timeout = 1;
-        final TimeUnit units = TimeUnit.MINUTES;
-
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        try (Watch watch = client.apps()
-                                 .deployments()
-                                 .withName(deployment.getMetadata().getName())
-                                 .watch(new Watcher<>()
-                                 {
-                                     @Override public void eventReceived(Action action, Deployment resource)
-                                     {
-                                         try
-                                         {
-                                             log.info("action {} {}", action, yamlMapper.writeValueAsString(resource));
-
-                                            final DeploymentStatus status = resource.getStatus();
-                                            if (status == null)
-                                            {
-                                                log.warn("Deployment has no status?");
-                                                return;
-                                            }
-
-                                            //
-                                            // release the latch if the deployment is up or deleted.
-                                            //
-                                            if (Action.DELETED.equals(action))
-                                            {
-                                                log.info("deployment was deleted.  abort!");
-                                                latch.countDown();
-                                            }
-                                            else if (status.getUnavailableReplicas() == null)
-                                            {
-                                                log.info("All replicas are ready.  Let's go!");
-                                                latch.countDown();
-                                            }
-                                         }
-                                         catch (Exception ex)
-                                         {
-                                             fail("Could not process callback event", ex);
-                                             // todo: this should log the error but trap the exception below, deleting the deployment/service if it was created.
-                                             // todo: this assertion failure is NOT caught by the test runner.
-                                         }
-                                     }
-
-                                     @Override public void onClose(WatcherException cause)
-                                     {
-                                         if (cause != null)
-                                         {
-                                             log.error("Watch forcibly closed", cause);
-                                         }
-
-                                         latch.countDown();
-                                     }
-                                 }))
+        try
         {
-            log.info("Awaiting a maximum of {} {} for deployment.", timeout, units);
+            DeploymentUtil.waitForDeployment(client, deployment, 1, TimeUnit.MINUTES);
+        }
+        catch (Exception ex)
+        {
+            log.error("An error occurred while starting the deployment", ex);
 
-            boolean completed = latch.await(timeout, units);
-            if (! completed)
+            if (deployment != null)
             {
-                //
-                // The deployment / services can be removed here, but this will scrub any debugging info from the event history.
-                // TODO: we can detect that the deployment has stalled, but the root cause will be in the POD status conditions...  trap the error here and present to the user.
-                //
-
-                if (deployment != null)
-                {
-                    log.error("Deleting failed deployment {}", deployment.getMetadata().getName());
-                    client.apps()
-                          .deployments()
-                          .delete(deployment);
-                }
-
-                if (service != null)
-                {
-                    log.error("Deleting service for failed chaincode deployment {}", service.getMetadata().getName());
-                    client.services().delete(service);
-                }
-
-                log.error("Deployment was not ready after {} {}.  Most likely this is an error pulling the Docker image {}",
-                          timeout,
-                          units,
-                          descriptor.metadata.getImage());
-
-                fail("Chaincode deployment failed.");
+                log.error("Deleting failed deployment {}", deployment.getMetadata().getName());
+                client.apps()
+                      .deployments()
+                      .delete(deployment);
             }
+
+            if (service != null)
+            {
+                log.error("Deleting service for failed chaincode deployment {}", service.getMetadata().getName());
+                client.services().delete(service);
+            }
+
+            fail("Chaincode deployment failed", ex);
         }
 
         return deployment;

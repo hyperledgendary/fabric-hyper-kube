@@ -11,6 +11,7 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.hyperledger.fabric.fabctl.command.ConfigTXGenCommand;
@@ -140,16 +141,29 @@ public class InitFabricNetworkTest extends TestBase
         //
         createGenesisBlock(network);   // only run once per cluster.
 
+
         //
         // Launch the orderers:
         //        kubectl apply -f src/test/resources/kube/orderer1.yaml
         //        kubectl apply -f src/test/resources/kube/orderer2.yaml
         //        kubectl apply -f src/test/resources/kube/orderer3.yaml
         //
+        final List<Deployment> orderers = new ArrayList<>();
+
         for (OrdererConfig config : network.getOrderers())
         {
-            launchOrderer(config);
+            orderers.add(launchOrderer(config));
         }
+
+
+        //
+        // Orderers all start before peers.
+        //
+        for (Deployment deployment : orderers)
+        {
+            DeploymentUtil.waitForDeployment(client, deployment, 1, TimeUnit.MINUTES);
+        }
+
 
         //
         // Launch the peers:
@@ -158,9 +172,20 @@ public class InitFabricNetworkTest extends TestBase
         //        kubectl apply -f src/test/resources/kube/org2-peer1.yaml
         //        kubectl apply -f src/test/resources/kube/org2-peer2.yaml
         //
+        final List<Deployment> peers = new ArrayList<>();
+
         for (PeerConfig config : network.getPeers())
         {
-            launchPeer(config);
+            peers.add(launchPeer(config));
+        }
+
+
+        //
+        // Peers all start before declaring victory.
+        //
+        for (Deployment deployment : peers)
+        {
+            DeploymentUtil.waitForDeployment(client, deployment, 1, TimeUnit.MINUTES);
         }
     }
 
@@ -198,7 +223,7 @@ public class InitFabricNetworkTest extends TestBase
     /**
      * This can be improved.  The point here is that it's being generated dynamically from a local fabric config.
      */
-    private void launchOrderer(final OrdererConfig config) throws IOException
+    private Deployment launchOrderer(final OrdererConfig config) throws IOException
     {
         log.info("launching orderer {}", config.getName());
 
@@ -340,9 +365,7 @@ public class InitFabricNetworkTest extends TestBase
 
         log.info("Created Service:\n{}", yamlMapper.writeValueAsString(service));
 
-        //
-        // TODO: wait for ready on the deployment.
-        //
+        return deployment;
     }
 
     /**
@@ -350,7 +373,7 @@ public class InitFabricNetworkTest extends TestBase
      * TODO: refactor, please - just load from a template from the resource bundle and substitute peer name and scope env.
      * TODO: refactor, per orderer deployment above.  Both are identical other than docker image, port maps, and scope env.
      */
-    private void launchPeer(final PeerConfig config) throws Exception
+    private Deployment launchPeer(final PeerConfig config) throws Exception
     {
         log.info("Launching peer {}", config.getName());
 
@@ -518,6 +541,9 @@ public class InitFabricNetworkTest extends TestBase
                                       .endSpec()
                                       .build());
 
+        log.info("Created service\n{}", yamlMapper.writeValueAsString(service));
+
+        return deployment;
     }
 
     /**
