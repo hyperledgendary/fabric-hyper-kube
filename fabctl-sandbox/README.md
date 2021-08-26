@@ -28,9 +28,6 @@ kubectl apply -f src/test/resources/kube/pvc-fabric.yaml
 
 ### Test Network
 
-- TODO: don't run cryptogen in the cluster.  Set up a CA 
-- TODO: introduce an _MSP context_ and load into k8s secrets/configmaps 
-
 ```shell
 kubectl -n test-network create configmap fabric-config --from-file=config/
 kubectl -n test-network create -f src/test/resources/kube/job-crypto-config.yaml
@@ -41,8 +38,10 @@ echo -n | ./gradlew test --tests CreateAndJoinChannelTest   # network.sh createC
 echo -n | ./gradlew test --tests ChaincodeSandboxTest       # network.sh deployCC 
 ```
 
-(Note: the above `echo -n |` is set up to give gradle a dedicated stdin.  Without it, the commands can 
-not be pasted into a terminal window as a sequential block.)
+- TODO: don't run cryptogen in the cluster.  Set up a CA
+- TODO: introduce an _MSP context_ and load into k8s secrets/configmaps
+- Note: the above `echo -n |` is set up to give gradle a dedicated stdin.  (Without it, the commands can 
+  not be pasted into a terminal window as a sequential block.)
 
 
 ### Chaincode Query 
