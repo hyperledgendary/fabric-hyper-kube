@@ -38,12 +38,21 @@ kubectl -n test-network wait --for=condition=complete --timeout=120s job/job-cry
 ```
 
 ```shell
-./gradlew test --tests InitFabricNetworkTest      # network.sh up 
-
-./gradlew test --tests CreateAndJoinChannelTest   # network.sh createChannel
-
-./gradlew test --tests ChaincodeSandboxTest       # network.sh deployCC 
+echo -n | ./gradlew test --tests InitFabricNetworkTest      # network.sh up 
+echo -n | ./gradlew test --tests CreateAndJoinChannelTest   # network.sh createChannel
+echo -n | ./gradlew test --tests ChaincodeSandboxTest       # network.sh deployCC 
 ```
+
+(Note: the above `echo -n |` is set up to give gradle a dedicated stdin.  Without it, the commands can 
+not be pasted into a terminal window as a sequential block.)
+
+
+### Chaincode Query 
+
+todo: deploy the fabric-rest-sample and a connection profile for access to the ledgers via REST entrypoints. Until then ... shell into a peer and: 
+
+[Query Chaincode](https://github.com/jkneubuh/fabric-samples/tree/feature/kind-test-network/test-network-kind#query)
+
 
 ## Teardown 
 
