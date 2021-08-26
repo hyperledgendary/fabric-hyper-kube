@@ -35,9 +35,7 @@ kubectl apply -f src/test/resources/kube/pvc-fabric.yaml
 kubectl -n test-network create configmap fabric-config --from-file=config/
 kubectl -n test-network create -f src/test/resources/kube/job-crypto-config.yaml
 kubectl -n test-network wait --for=condition=complete --timeout=120s job/job-crypto-config
-```
 
-```shell
 echo -n | ./gradlew test --tests InitFabricNetworkTest      # network.sh up 
 echo -n | ./gradlew test --tests CreateAndJoinChannelTest   # network.sh createChannel
 echo -n | ./gradlew test --tests ChaincodeSandboxTest       # network.sh deployCC 
