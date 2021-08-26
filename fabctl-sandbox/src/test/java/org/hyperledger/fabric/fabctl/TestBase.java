@@ -38,7 +38,10 @@ public class TestBase
 
     protected static final String TEST_NAMESPACE = "test-network";
 
+    protected static final String CCS_BUILDER_IMAGE = "hyperledgendary/fabric-ccs-builder";
+
     protected static final long JOB_TIMEOUT = 120;
+
     protected static final TimeUnit JOB_TIMEOUT_UNITS = TimeUnit.SECONDS;
 
     protected static Config kubeConfig;
@@ -154,35 +157,35 @@ public class TestBase
         return new JobBuilder()
                 .withApiVersion("batch/v1")
                 .withNewMetadata()
-                .withGenerateName("peer-job-")
+                    .withGenerateName("peer-job-")
                 .endMetadata()
                 .withNewSpec()
-                .withBackoffLimit(0)
-                .withCompletions(1)
-                .withNewTemplate()
-                .withNewSpec()
-                .withRestartPolicy("Never")
-                .addNewContainer()
-                .withName("main")
-                .withImage(command.getImage() + ":" + command.getLabel())
-                .withCommand(command.command)
-                .withEnv(env)
-                .withVolumeMounts(volumeMounts)
-                .endContainer()
-                .addNewVolume()
-                .withName("fabric-volume")
-                .withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSourceBuilder()
-                                                   .withClaimName("fabric")
-                                                   .build())
-                .endVolume()
-                .addNewVolume()
-                .withName("fabric-config")
-                .withConfigMap(new ConfigMapVolumeSourceBuilder()
-                                       .withName("fabric-config")
-                                       .build())
-                .endVolume()
-                .endSpec()
-                .endTemplate()
+                    .withBackoffLimit(0)
+                    .withCompletions(1)
+                    .withNewTemplate()
+                        .withNewSpec()
+                            .withRestartPolicy("Never")
+                            .addNewContainer()
+                                .withName("main")
+                                .withImage(command.getImage() + ":" + command.getLabel())
+                                .withCommand(command.command)
+                                .withEnv(env)
+                                .withVolumeMounts(volumeMounts)
+                            .endContainer()
+                            .addNewVolume()
+                                .withName("fabric-volume")
+                                .withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSourceBuilder()
+                                                                   .withClaimName("fabric")
+                                                                   .build())
+                            .endVolume()
+                            .addNewVolume()
+                                .withName("fabric-config")
+                                .withConfigMap(new ConfigMapVolumeSourceBuilder()
+                                                       .withName("fabric-config")
+                                                       .build())
+                            .endVolume()
+                        .endSpec()
+                    .endTemplate()
                 .endSpec()
                 .build();
         // @formatter:on

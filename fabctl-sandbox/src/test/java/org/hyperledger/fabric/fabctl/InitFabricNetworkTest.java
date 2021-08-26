@@ -11,6 +11,7 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.hyperledger.fabric.fabctl.command.ConfigTXGenCommand;
@@ -140,16 +141,29 @@ public class InitFabricNetworkTest extends TestBase
         //
         createGenesisBlock(network);   // only run once per cluster.
 
+
         //
         // Launch the orderers:
         //        kubectl apply -f src/test/resources/kube/orderer1.yaml
         //        kubectl apply -f src/test/resources/kube/orderer2.yaml
         //        kubectl apply -f src/test/resources/kube/orderer3.yaml
         //
+        final List<Deployment> orderers = new ArrayList<>();
+
         for (OrdererConfig config : network.getOrderers())
         {
-            launchOrderer(config);
+            orderers.add(launchOrderer(config));
         }
+
+
+        //
+        // Orderers all start before peers.
+        //
+        for (Deployment deployment : orderers)
+        {
+            DeploymentUtil.waitForDeployment(client, deployment, 1, TimeUnit.MINUTES);
+        }
+
 
         //
         // Launch the peers:
@@ -158,9 +172,20 @@ public class InitFabricNetworkTest extends TestBase
         //        kubectl apply -f src/test/resources/kube/org2-peer1.yaml
         //        kubectl apply -f src/test/resources/kube/org2-peer2.yaml
         //
+        final List<Deployment> peers = new ArrayList<>();
+
         for (PeerConfig config : network.getPeers())
         {
-            launchPeer(config);
+            peers.add(launchPeer(config));
+        }
+
+
+        //
+        // Peers all start before declaring victory.
+        //
+        for (Deployment deployment : peers)
+        {
+            DeploymentUtil.waitForDeployment(client, deployment, 1, TimeUnit.MINUTES);
         }
     }
 
@@ -198,7 +223,7 @@ public class InitFabricNetworkTest extends TestBase
     /**
      * This can be improved.  The point here is that it's being generated dynamically from a local fabric config.
      */
-    private void launchOrderer(final OrdererConfig config) throws IOException
+    private Deployment launchOrderer(final OrdererConfig config) throws IOException
     {
         log.info("launching orderer {}", config.getName());
 
@@ -340,17 +365,15 @@ public class InitFabricNetworkTest extends TestBase
 
         log.info("Created Service:\n{}", yamlMapper.writeValueAsString(service));
 
-        //
-        // TODO: wait for ready on the deployment.
-        //
+        return deployment;
     }
 
     /**
      * TODO: refactor, please
-     * Please refactor this and the orderer setup above.  Both are virtually identical other than the
-     * port mappings exposed by the container and the Docker image.
+     * TODO: refactor, please - just load from a template from the resource bundle and substitute peer name and scope env.
+     * TODO: refactor, per orderer deployment above.  Both are identical other than docker image, port maps, and scope env.
      */
-    private void launchPeer(final PeerConfig config) throws Exception
+    private Deployment launchPeer(final PeerConfig config) throws Exception
     {
         log.info("Launching peer {}", config.getName());
 
@@ -380,6 +403,10 @@ public class InitFabricNetworkTest extends TestBase
                               new VolumeMountBuilder()
                                       .withName("fabric-config")
                                       .withMountPath("/var/hyperledger/fabric/config")
+                                      .build(),
+                              new VolumeMountBuilder()
+                                      .withName("ccs-builder")
+                                      .withMountPath("/var/hyperledger/fabric/ccs-builder/bin")
                                       .build());
 
         //
@@ -407,45 +434,66 @@ public class InitFabricNetworkTest extends TestBase
         //
         // Please stop using the builder to construct these with this pattern.  It's ugly, excessive, and can be improved.
         //
+        // All this needs to do is load a yaml template from the resource bundle and substitute config.getName() + env.
+        //
         // @formatter:off
         final Deployment template =
                 new DeploymentBuilder()
                         .withApiVersion("apps/v1")
                         .withNewMetadata()
-                        .withName(config.getName())
+                            .withName(config.getName())
                         .endMetadata()
                         .withNewSpec()
-                        .withReplicas(1)
-                        .withNewSelector()
-                        .withMatchLabels(Map.of("app", config.getName()))
-                        .endSelector()
-                        .withNewTemplate()
-                        .withNewMetadata()
-                        .withLabels(Map.of("app", config.getName()))
-                        // todo: other labels here.
-                        .endMetadata()
-                        .withNewSpec()
-                        .addNewContainer()
-                        .withName("main")
-                        .withImage("hyperledger/fabric-peer:" + FABRIC_VERSION)
-                        .withEnv(env)
-                        .withVolumeMounts(volumeMounts)
-                        .withPorts(containerPorts)
-                        .endContainer()
-                        .addNewVolume()
-                        .withName("fabric-volume")
-                        .withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSourceBuilder()
-                                                           .withClaimName("fabric")
-                                                           .build())
-                        .endVolume()
-                        .addNewVolume()
-                        .withName("fabric-config")
-                        .withConfigMap(new ConfigMapVolumeSourceBuilder()
-                                               .withName("fabric-config")
-                                               .build())
-                        .endVolume()
-                        .endSpec()
-                        .endTemplate()
+                            .withReplicas(1)
+                            .withNewSelector()
+                            .withMatchLabels(Map.of("app", config.getName()))
+                            .endSelector()
+                            .withNewTemplate()
+                                .withNewMetadata()
+                                    .withLabels(Map.of("app", config.getName()))
+                                // todo: other labels here.
+                                .endMetadata()
+                                .withNewSpec()
+
+                                    .addNewContainer()
+                                        .withName("main")
+                                        .withImage("hyperledger/fabric-peer:" + FABRIC_VERSION)
+                                        .withEnv(env)
+                                        .withVolumeMounts(volumeMounts)
+                                        .withPorts(containerPorts)
+                                    .endContainer()
+
+                                    // this copies the ccs-builder binaries into the peer image for external chaincode.
+                                    .addNewInitContainer()
+                                        .withName("fabric-ccs-builder")
+                                        .withImage(CCS_BUILDER_IMAGE)
+                                        .withImagePullPolicy("IfNotPresent")
+                                        .withCommand("sh", "-c")
+                                        .withArgs("cp /go/bin/* /var/hyperledger/fabric/ccs-builder/bin/")
+                                        .withVolumeMounts(Arrays.asList(new VolumeMountBuilder()
+                                                                                .withName("ccs-builder")
+                                                                                .withMountPath("/var/hyperledger/fabric/ccs-builder/bin")
+                                                                                .build()))
+                                    .endInitContainer()
+
+                                    .addNewVolume()
+                                        .withName("fabric-volume")
+                                        .withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSourceBuilder()
+                                                                           .withClaimName("fabric")
+                                                                           .build())
+                                    .endVolume()
+                                    .addNewVolume()
+                                        .withName("fabric-config")
+                                        .withConfigMap(new ConfigMapVolumeSourceBuilder()
+                                                               .withName("fabric-config")
+                                                               .build())
+                                    .endVolume()
+                                    .addNewVolume()
+                                        .withName("ccs-builder")
+                                        .withEmptyDir(new EmptyDirVolumeSource())
+                                    .endVolume()
+                                .endSpec()
+                            .endTemplate()
                         .endSpec()
                         .build();
         // @formatter:on
@@ -493,6 +541,9 @@ public class InitFabricNetworkTest extends TestBase
                                       .endSpec()
                                       .build());
 
+        log.info("Created service\n{}", yamlMapper.writeValueAsString(service));
+
+        return deployment;
     }
 
     /**

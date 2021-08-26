@@ -558,7 +558,7 @@ chaincode:
     # chaincode. The external builder detection processing will iterate over the
     # builders in the order specified below.
     externalBuilders:
-      - path: /var/hyperledger/fabric/chaincode/ccs-builder
+      - path: /var/hyperledger/fabric/ccs-builder
         name: ccs-builder
         propagateEnvironment:
           - HOME
