@@ -20,9 +20,7 @@ routines may be refactored into CLIs, service APIs, or eventually into a fully-f
 kind create cluster
 kind load docker-image hyperledgendary/fabric-ccs-builder
 kind load docker-image hyperledger/chaincode/asset-transfer-basic
-```
 
-```shell
 kubectl apply -f src/test/resources/kube/ns-test-network.yaml
 kubectl apply -f src/test/resources/kube/pv-fabric.yaml
 kubectl apply -f src/test/resources/kube/pvc-fabric.yaml
@@ -56,12 +54,7 @@ todo: deploy the fabric-rest-sample and a connection profile for access to the l
 ## Teardown 
 
 ```shell
-kubectl -n test-network create -f src/test/resources/kube/job-scrub-test-network.yaml
-kubectl -n test-network wait --for-condition=complete job/job-scrub-test-network
-kubectl delete namespace test-network 
-```
-
-or...
-```shell
 kind delete cluster
 ```
+
+- TODO: add script and notes to scrub the network without destroying the KIND cluster. 
