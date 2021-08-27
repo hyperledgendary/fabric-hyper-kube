@@ -100,5 +100,3 @@ or ...
 ```shell
 kind delete cluster
 ```
-
-- TODO: add script and notes to scrub the network without destroying the KIND cluster. 
