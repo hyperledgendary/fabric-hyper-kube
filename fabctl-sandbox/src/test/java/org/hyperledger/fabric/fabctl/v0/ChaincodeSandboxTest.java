@@ -3,24 +3,19 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.hyperledger.fabric.fabctl;
+package org.hyperledger.fabric.fabctl.v0;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
-import io.fabric8.kubernetes.api.model.apps.DeploymentStatus;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
-import io.fabric8.kubernetes.client.Watch;
-import io.fabric8.kubernetes.client.Watcher;
-import io.fabric8.kubernetes.client.WatcherException;
 import java.io.*;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +23,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
-import org.hyperledger.fabric.fabctl.command.PeerCommand;
+import org.hyperledger.fabric.fabctl.v0.command.PeerCommand;
 import org.junit.jupiter.api.Test;
 
 import static java.util.Map.entry;

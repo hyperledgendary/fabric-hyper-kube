@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.hyperledger.fabric.fabctl;
+package org.hyperledger.fabric.fabctl.v0;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;

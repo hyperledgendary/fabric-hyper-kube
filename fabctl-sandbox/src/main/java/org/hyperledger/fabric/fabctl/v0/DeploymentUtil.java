@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.hyperledger.fabric.fabctl;
+package org.hyperledger.fabric.fabctl.v0;
 
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import io.fabric8.kubernetes.api.model.apps.Deployment;

@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.hyperledger.fabric.fabctl;
+package org.hyperledger.fabric.fabctl.v0;
 
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -14,7 +14,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.hyperledger.fabric.fabctl.command.ConfigTXGenCommand;
+import org.hyperledger.fabric.fabctl.v0.command.ConfigTXGenCommand;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

@@ -20,18 +20,50 @@ routines may be refactored into CLIs, service APIs, or eventually into a fully-f
 kind create cluster
 kind load docker-image hyperledgendary/fabric-ccs-builder
 kind load docker-image hyperledger/chaincode/asset-transfer-basic
+```
 
-kubectl apply -f src/test/resources/kube/ns-test-network.yaml
-kubectl apply -f src/test/resources/kube/pv-fabric.yaml
-kubectl apply -f src/test/resources/kube/pvc-fabric.yaml
+```shell
+kubectl create -f src/test/resources/kube/pv-fabric.yaml
+kubectl create -f src/test/resources/kube/ns-test-network.yaml
+kubectl -n test-network create -f src/test/resources/kube/pvc-fabric.yaml
 ```
 
 ### Test Network
+
+#### v0 
+
+crypto-spec is stored "in cluster" 
 
 ```shell
 kubectl -n test-network create configmap fabric-config --from-file=config/
 kubectl -n test-network create -f src/test/resources/kube/job-crypto-config.yaml
 kubectl -n test-network wait --for=condition=complete --timeout=120s job/job-crypto-config
+```
+
+```shell
+echo -n | ./gradlew test --tests org.hyperledger.fabric.fabctl.v0.InitFabricNetworkTest      # network.sh up 
+echo -n | ./gradlew test --tests org.hyperledger.fabric.fabctl.v0.CreateAndJoinChannelTest   # network.sh createChannel
+echo -n | ./gradlew test --tests org.hyperledger.fabric.fabctl.v0.ChaincodeSandboxTest       # network.sh deployCC 
+```
+
+#### v1
+
+crypto-spec is stored locally and reflected as configmaps / secrets 
+
+```shell
+docker run \
+  --rm \
+  -v ${PWD}/config:/config \
+  hyperledger/fabric-tools \
+    cryptogen generate \
+    --config=/config/crypto-config.yaml \
+    --output=/config/crypto-config 
+
+kubectl -n test-network create configmap fabric-config --from-file=config/
+```
+
+```shell
+???
 
 echo -n | ./gradlew test --tests InitFabricNetworkTest      # network.sh up 
 echo -n | ./gradlew test --tests CreateAndJoinChannelTest   # network.sh createChannel
@@ -53,6 +85,16 @@ todo: deploy the fabric-rest-sample and a connection profile for access to the l
 
 ## Teardown 
 
+```shell
+# kubectl -n test-network delete deployment --all 
+kubectl -n test-network create -f src/test/resources/kube/job-scrub-test-network.yaml
+kubectl -n test-network wait --for=condition=complete --timeout=60s job/job-scrub-fabric-volume
+kubectl delete namespace test-network 
+kubectl delete pv fabric
+```
+
+
+or ... 
 ```shell
 kind delete cluster
 ```

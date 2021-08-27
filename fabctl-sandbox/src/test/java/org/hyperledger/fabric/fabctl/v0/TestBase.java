@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.hyperledger.fabric.fabctl;
+package org.hyperledger.fabric.fabctl.v0;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
@@ -22,9 +22,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
-import org.hyperledger.fabric.fabctl.command.ConfigTXGenCommand;
-import org.hyperledger.fabric.fabctl.command.FabricCommand;
-import org.hyperledger.fabric.fabctl.command.PeerCommand;
+import org.hyperledger.fabric.fabctl.v0.command.ConfigTXGenCommand;
+import org.hyperledger.fabric.fabctl.v0.command.FabricCommand;
+import org.hyperledger.fabric.fabctl.v0.command.PeerCommand;
 import org.junit.jupiter.api.BeforeAll;
 
 import static org.junit.jupiter.api.Assertions.fail;
