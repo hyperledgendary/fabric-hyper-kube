@@ -14,7 +14,7 @@ routines may be refactored into CLIs, service APIs, or eventually into a fully-f
 
 ## Quickstart 
 
-### Kubernetes
+### Kube
 
 ```shell
 kind create cluster
@@ -93,9 +93,10 @@ kubectl -n test-network create -f src/test/resources/kube/job-scrub-test-network
 kubectl -n test-network wait --for=condition=complete --timeout=60s job/job-scrub-fabric-volume
 kubectl -n test-network delete job --all
 ```
-- TODO: why does deleting the namespace + pv/pvc sometimes fail to scrub the contents from the volume? 
+[GOTO Network](#test-network)
 
 or ... 
 ```shell
 kind delete cluster
 ```
+[GOTO Kube](#kube)
