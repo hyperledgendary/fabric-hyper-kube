@@ -87,12 +87,14 @@ todo: deploy the fabric-rest-sample and a connection profile for access to the l
 
 ```shell
 kubectl -n test-network delete deployment --all 
+kubectl -n test-network delete service --all
+kubectl -n test-network delete configmap --all 
+kubectl -n test-network delete secret --all 
 kubectl -n test-network create -f src/test/resources/kube/job-scrub-test-network.yaml
 kubectl -n test-network wait --for=condition=complete --timeout=60s job/job-scrub-fabric-volume
-kubectl delete namespace test-network 
-kubectl delete pv fabric
+kubectl -n test-network delete job --all
 ```
-
+- TODO: why does deleting the namespace + pv/pvc sometimes fail to scrub the contents from the volume? 
 
 or ... 
 ```shell
