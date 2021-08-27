@@ -104,8 +104,6 @@ peer chaincode \
 
 - TODO: deploy the fabric-rest-sample and a connection profile for access to the ledgers via REST entrypoints.
 
-[Query Chaincode](https://github.com/jkneubuh/fabric-samples/tree/feature/kind-test-network/test-network-kind#query)
-
 
 ## Teardown 
 
