@@ -86,7 +86,7 @@ todo: deploy the fabric-rest-sample and a connection profile for access to the l
 ## Teardown 
 
 ```shell
-# kubectl -n test-network delete deployment --all 
+kubectl -n test-network delete deployment --all 
 kubectl -n test-network create -f src/test/resources/kube/job-scrub-test-network.yaml
 kubectl -n test-network wait --for=condition=complete --timeout=60s job/job-scrub-fabric-volume
 kubectl delete namespace test-network 
