@@ -93,19 +93,19 @@ public class InitFabricNetworkTest extends TestBase
         put("ORDERER_GENERAL_TLS_ROOTCAS", "/var/hyperledger/fabric/crypto-config/ordererOrganizations/example.com/orderers/orderer1.example.com/tls/ca.crt");
         put("ORDERER_GENERAL_BOOTSTRAPMETHOD", "file");
         put("ORDERER_GENERAL_BOOTSTRAPFILE", "/var/hyperledger/fabric/channel-artifacts/genesis.block");
-        put("ORDERER_FILELEDGER_LOCATION", "/var/hyperledger/fabric/data/orderer");
-        put("ORDERER_CONSENSUS_WALDIR", "/var/hyperledger/fabric/data/orderer/etcdraft/wal");
-        put("ORDERER_CONSENSUS_SNAPDIR", "/var/hyperledger/fabric/data/orderer/etcdraft/wal");
+        put("ORDERER_FILELEDGER_LOCATION", "/var/hyperledger/fabric/data/orderer1");
+        put("ORDERER_CONSENSUS_WALDIR", "/var/hyperledger/fabric/data/orderer1/etcdraft/wal");
+        put("ORDERER_CONSENSUS_SNAPDIR", "/var/hyperledger/fabric/data/orderer1/etcdraft/wal");
         put("ORDERER_OPERATIONS_LISTENADDRESS", "0.0.0.0:8443");
         put("ORDERER_ADMIN_LISTENADDRESS", "0.0.0.0:9443");
     }}; 
 
-    private static final Context ORDERER2_CONTEXT = loadContext("/config/orderer2.properties");
-    private static final Context ORDERER3_CONTEXT = loadContext("/config/orderer3.properties");
-    private static final Context ORG1_PEER1_CONTEXT = loadContext("/config/org1-peer1.properties");
-    private static final Context ORG1_PEER2_CONTEXT = loadContext("/config/org1-peer2.properties");
-    private static final Context ORG2_PEER1_CONTEXT = loadContext("/config/org2-peer1.properties");
-    private static final Context ORG2_PEER2_CONTEXT = loadContext("/config/org2-peer2.properties");
+    private static final Context ORDERER2_CONTEXT = loadContext("/config/v0/orderer2.properties");
+    private static final Context ORDERER3_CONTEXT = loadContext("/config/v0/orderer3.properties");
+    private static final Context ORG1_PEER1_CONTEXT = loadContext("/config/v0/org1-peer1.properties");
+    private static final Context ORG1_PEER2_CONTEXT = loadContext("/config/v0/org1-peer2.properties");
+    private static final Context ORG2_PEER1_CONTEXT = loadContext("/config/v0/org2-peer1.properties");
+    private static final Context ORG2_PEER2_CONTEXT = loadContext("/config/v0/org2-peer2.properties");
 
     private static final Context ADMIN_CONTEXT = new Context(){{
         put("FABRIC_CFG_PATH", "/var/hyperledger/fabric");

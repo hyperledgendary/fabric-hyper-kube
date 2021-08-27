@@ -35,7 +35,7 @@ kubectl -n test-network create -f src/test/resources/kube/pvc-fabric.yaml
 crypto-spec is stored "in cluster" 
 
 ```shell
-kubectl -n test-network create configmap fabric-config --from-file=config/
+kubectl -n test-network create configmap fabric-config --from-file=config/v0/
 kubectl -n test-network create -f src/test/resources/kube/job-crypto-config.yaml
 kubectl -n test-network wait --for=condition=complete --timeout=120s job/job-crypto-config
 
