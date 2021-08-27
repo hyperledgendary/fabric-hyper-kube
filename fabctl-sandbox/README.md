@@ -49,6 +49,7 @@ echo -n | ./gradlew test --tests org.hyperledger.fabric.fabctl.v0.ChaincodeSandb
 crypto-spec is stored locally and reflected as configmaps / secrets 
 
 ```shell
+kubectl -n test-network create configmap fabric-config --from-file=config/
 docker run \
   --rm \
   -v ${PWD}/config:/config \
@@ -56,8 +57,6 @@ docker run \
     cryptogen generate \
     --config=/config/crypto-config.yaml \
     --output=/config/crypto-config 
-
-kubectl -n test-network create configmap fabric-config --from-file=config/
 ```
 
 ```shell
@@ -93,11 +92,7 @@ peer chaincode \
 
 sleep 5
 
-peer chaincode \
-  query \
-  -C mychannel \
-  -n basic \
-  -c '{"Args":["ReadAsset","1"]}'
+peer chaincode query -C mychannel -n basic -c '{"Args":["ReadAsset","1"]}'
 
 # exit
 ```
