@@ -85,6 +85,7 @@ todo: deploy the fabric-rest-sample and a connection profile for access to the l
 
 ```shell
 kubectl -n test-network delete deployment --all 
+kubectl -n test-network delete pod --all
 kubectl -n test-network delete service --all
 kubectl -n test-network delete configmap --all 
 kubectl -n test-network delete secret --all 
