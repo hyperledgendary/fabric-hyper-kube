@@ -76,7 +76,33 @@ echo -n | ./gradlew test --tests ChaincodeSandboxTest       # network.sh deployC
 
 ### Chaincode Query 
 
-todo: deploy the fabric-rest-sample and a connection profile for access to the ledgers via REST entrypoints. Until then ... shell into a peer and: 
+open a shell to org1-peer1 and:
+```shell
+kubectl -n test-network exec deploy/org1-peer1 -i -t -- /bin/sh
+export CORE_PEER_MSPCONFIGPATH=/var/hyperledger/fabric/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+export FABRIC_LOGGING_SPEC=INFO
+
+peer chaincode \
+  invoke \
+  -o orderer1:6050 \
+  -C mychannel \
+  -n basic \
+  -c '{"Args":["CreateAsset","1","blue","35","tom","1000"]}' \
+  --tls \
+  --cafile /var/hyperledger/fabric/crypto-config/ordererOrganizations/example.com/orderers/orderer1.example.com/tls/ca.crt \
+
+sleep 5
+
+peer chaincode \
+  query \
+  -C mychannel \
+  -n basic \
+  -c '{"Args":["ReadAsset","1"]}'
+
+# exit
+```
+
+- TODO: deploy the fabric-rest-sample and a connection profile for access to the ledgers via REST entrypoints.
 
 [Query Chaincode](https://github.com/jkneubuh/fabric-samples/tree/feature/kind-test-network/test-network-kind#query)
 
