@@ -9,7 +9,8 @@ kind: Job
 metadata:
   name: job-scrub-fabric-volume
 spec:
-  backoffLimit: 1
+  backoffLimit: 0
+  completions: 1
   template:
     metadata:
       name: scrub-fabric-volume
@@ -19,9 +20,9 @@ spec:
         - name: main
           image: alpine
           command:
-            - rm
-            - -rf
-            - /var/hyperledger/fabric/*
+            - sh
+            - -c
+            - "rm -rvf /var/hyperledger/fabric/*"
           volumeMounts:
             - name: fabric-volume
               mountPath: /var/hyperledger/fabric
