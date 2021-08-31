@@ -606,7 +606,6 @@ public class CryptoXYZZYTest extends TestBase
             assertNotNull(msp);
             assertNotNull(msp.getMetadata());
             assertEquals("xyzzy-msp-com.example.orderer1", msp.getMetadata().getName());
-//            assertTrue(msp.getImmutable());    // ???
             assertNotNull(msp.getData());
             assertTrue(msp.getData().containsKey("cacert.pem"));
             assertTrue(msp.getData().containsKey("keystore.key"));
@@ -623,7 +622,6 @@ public class CryptoXYZZYTest extends TestBase
             assertNotNull(tls);
             assertNotNull(tls.getMetadata());
             assertEquals("xyzzy-tls-com.example.orderer1", tls.getMetadata().getName());
-//            assertTrue(tls.getImmutable());  // ???
             assertNotNull(tls.getData());
             assertTrue(tls.getData().containsKey("ca.crt"));
             assertTrue(tls.getData().containsKey("server.crt"));
@@ -753,12 +751,12 @@ public class CryptoXYZZYTest extends TestBase
         }
         finally
         {
-//            client.configMaps().withName("xyzzy-msp-com.example.orderer1").delete();
-//            client.configMaps().withName("xyzzy-tls-com.example.orderer1").delete();
-//            client.configMaps().withName("xyzzy-msp-com.example.orderer2").delete();
-//            client.configMaps().withName("xyzzy-tls-com.example.orderer2").delete();
-//            client.configMaps().withName("xyzzy-msp-com.example.orderer3").delete();
-//            client.configMaps().withName("xyzzy-tls-com.example.orderer3").delete();
+            client.configMaps().withName("xyzzy-msp-com.example.orderer1").delete();
+            client.configMaps().withName("xyzzy-tls-com.example.orderer1").delete();
+            client.configMaps().withName("xyzzy-msp-com.example.orderer2").delete();
+            client.configMaps().withName("xyzzy-tls-com.example.orderer2").delete();
+            client.configMaps().withName("xyzzy-msp-com.example.orderer3").delete();
+            client.configMaps().withName("xyzzy-tls-com.example.orderer3").delete();
         }
     }
 
