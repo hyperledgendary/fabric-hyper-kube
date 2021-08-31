@@ -14,13 +14,15 @@ routines may be refactored into CLIs, service APIs, or eventually into a fully-f
 
 ## Quickstart 
 
-### Kubernetes
+### Kube
 
 ```shell
 kind create cluster
 kind load docker-image hyperledgendary/fabric-ccs-builder
 kind load docker-image hyperledger/chaincode/asset-transfer-basic
+```
 
+```shell
 kubectl apply -f src/test/resources/kube/ns-test-network.yaml
 kubectl apply -f src/test/resources/kube/pv-fabric.yaml
 kubectl apply -f src/test/resources/kube/pvc-fabric.yaml
