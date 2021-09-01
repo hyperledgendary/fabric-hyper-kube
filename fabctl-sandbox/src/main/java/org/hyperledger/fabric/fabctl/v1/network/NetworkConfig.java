@@ -17,8 +17,7 @@ import lombok.Data;
 public class NetworkConfig
 {
     public final Metadata metadata;
-    public final List<PeerConfig> peers = new ArrayList<>();
-    public final List<OrdererConfig> orderers = new ArrayList<>();
+    public final List<OrganizationConfig> organizations = new ArrayList<>();
 
     public NetworkConfig(final String name)
     {

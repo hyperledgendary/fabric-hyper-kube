@@ -93,68 +93,8 @@ import static org.junit.jupiter.api.Assertions.*;
  *   instruct the core/configtx.yaml to unfurl the archive at runtime.
  */
 @Slf4j
-public class CryptoXYZZYTest extends TestBase
+public class CryptoXYZZYConfigMapTest extends TestBase
 {
-    //
-    // These can come from any k/v source (e.g. resource bundle, as below)
-    // Note that the env scope has now has a "generic" path to the crypto assets, which will be filled in 
-    // by the location of the mounted config map when run in the cluster.
-    //
-    // (Just showing one env here for illustration.)
-    // For clarity, some of the common overrides have been propagated into core.yaml and orderer.yaml
-    // todo: migrate common peer config params to core.yaml
-    //
-    private static final Environment ORDERER1_ENVIRONMENT = new Environment()
-    {{
-        // These are the same for all orderers, but could be useful to override from a dynamic context.
-        put("FABRIC_CFG_PATH",                  "/var/hyperledger/fabric/config");
-        put("FABRIC_LOGGING_SPEC",              "debug:cauthdsl,policies,msp,common.configtx,common.channelconfig=info");
-        put("ORDERER_GENERAL_BOOTSTRAPFILE",    "/var/hyperledger/fabric/channel-artifacts/genesis.block");
-
-        // these vary across orderers
-        put("ORDERER_FILELEDGER_LOCATION",      "/var/hyperledger/fabric/data/orderer1");
-        put("ORDERER_CONSENSUS_WALDIR",         "/var/hyperledger/fabric/data/orderer1/etcdraft/wal");
-        put("ORDERER_CONSENSUS_SNAPDIR",        "/var/hyperledger/fabric/data/orderer1/etcdraft/wal");
-
-        // xyzzy-context attributes.   Fulfilled via dynamic configmap / secret.
-        put("ORDERER_GENERAL_LOCALMSPID",       "OrdererMSP");
-        put("ORDERER_GENERAL_LOCALMSPDIR",      "/var/hyperledger/fabric/xyzzy/orderer1.example.com/msp");
-        put("ORDERER_GENERAL_TLS_PRIVATEKEY",   "/var/hyperledger/fabric/xyzzy/orderer1.example.com/tls/server.key");
-        put("ORDERER_GENERAL_TLS_CERTIFICATE",  "/var/hyperledger/fabric/xyzzy/orderer1.example.com/tls/server.crt");
-        put("ORDERER_GENERAL_TLS_ROOTCAS",      "/var/hyperledger/fabric/xyzzy/orderer1.example.com/tls/ca.crt");
-        put("ORDERER_GENERAL_TLS_ENABLED",      "true");
-    }};
-    
-    private static final Environment ORDERER2_ENVIRONMENT   = loadEnvironment("/config/v1/orderer2.properties");
-    private static final Environment ORDERER3_ENVIRONMENT   = loadEnvironment("/config/v1/orderer3.properties");
-    private static final Environment ORG1_PEER1_ENVIRONMENT = loadEnvironment("/config/v1/org1-peer1.properties");
-    private static final Environment ORG1_PEER2_ENVIRONMENT = loadEnvironment("/config/v1/org1-peer2.properties");
-    private static final Environment ORG2_PEER1_ENVIRONMENT = loadEnvironment("/config/v1/org2-peer1.properties");
-    private static final Environment ORG2_PEER2_ENVIRONMENT = loadEnvironment("/config/v1/org2-peer2.properties");
-
-
-    private NetworkConfig describeSampleNetwork()
-    {
-        final NetworkConfig network = new NetworkConfig("test-network");
-
-        network.orderers.add(new OrdererConfig("orderer1", ORDERER1_ENVIRONMENT));
-        network.orderers.add(new OrdererConfig("orderer2", ORDERER2_ENVIRONMENT));
-        network.orderers.add(new OrdererConfig("orderer3", ORDERER3_ENVIRONMENT));
-
-        network.peers.add(new PeerConfig("org1-peer1", ORG1_PEER1_ENVIRONMENT));
-        network.peers.add(new PeerConfig("org1-peer2", ORG1_PEER2_ENVIRONMENT));
-        network.peers.add(new PeerConfig("org2-peer1", ORG2_PEER1_ENVIRONMENT));
-        network.peers.add(new PeerConfig("org2-peer2", ORG2_PEER2_ENVIRONMENT));
-
-        return network;
-    }
-
-    @Test
-    public void testPrettyPrintNetwork() throws Exception
-    {
-        final NetworkConfig network = describeSampleNetwork();
-        log.info("Network Configuration:\n{}", yamlMapper.writeValueAsString(network));
-    }
 
     /**
      * Constructing the network genesis block needs a few bits of crypto spec loaded
@@ -760,50 +700,4 @@ public class CryptoXYZZYTest extends TestBase
         }
     }
 
-    /**
-     * This can be improved, but it's not super relevant HOW the context is initialized.  Just experimenting here...
-     */
-    private static Environment loadEnvironment(final String path)
-    {
-        final Properties props = new Properties();
-
-        try
-        {
-            props.load(CryptoXYZZYTest.class.getResourceAsStream(path));
-        }
-        catch (IOException ex)
-        {
-            fail("Could not load resource bundle " + path, ex);
-        }
-
-        final Environment environment = new Environment();
-        for (Object o : props.keySet())
-        {
-            final String key = o.toString();
-            environment.put(key, props.getProperty(key));
-        }
-
-        return environment;
-    }
-
-    private String load(File path) throws IOException
-    {
-        try (final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-             final FileInputStream fis = new FileInputStream(path))
-        {
-            IOUtils.copy(fis, baos);
-
-            return baos.toString(Charset.defaultCharset());
-        }
-    }
-
-    private String loadBinary(File path) throws IOException
-    {
-        try (final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-             final FileInputStream fis = new FileInputStream(path))
-        {
-            IOUtils.copy(fis, baos);
-            return Base64.getEncoder().encodeToString(baos.toByteArray());
-        }
-    }
 }

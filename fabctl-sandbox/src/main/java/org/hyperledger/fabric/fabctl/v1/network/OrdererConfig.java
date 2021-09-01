@@ -12,4 +12,10 @@ public class OrdererConfig
 {
     public final String name;
     public final Environment environment;
+
+    public OrdererConfig(final String name, final Environment environment)
+    {
+        this.name = name;
+        this.environment = environment;
+    }
 }
