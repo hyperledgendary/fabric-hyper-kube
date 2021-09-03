@@ -63,6 +63,37 @@ import static org.junit.jupiter.api.Assertions.*;
  * TODO: why is hyperledger/fabric-ca:1.5 the latest rev on docker hub?  What about 2.3.2 ?
  * TODO: set up a readiness probe on the CA port 7054 - this will block the deployment until after the CA cert has been generated.
  * TODO: track down the ACTIVE pod running a deployment.  Some can be left in TERMINATING status.
+ *
+ *
+ * OUTCOMES FROM THIS TEST:
+ *
+ * - There IS a path to set up CAs (both TLS and ECert) for multi-org networks.  Using a network descriptor
+ *   to describe the topology (orgs, nodes, scope, MSP context, etc.) seems like a valuable approach to carry
+ *   forward.
+ *
+ * - Transferring the CA signing certificate out of the container is done via "kubectl cp ..." (tar -).  This
+ *   approach is a good practice for moving files into/out of containers at runtime for cases when configmaps
+ *   aren't suitable.
+ *
+ * - Setting up the CA deployments (and services) is straightforward, but there is still a big open question
+ *   about how to actually reach the CA endpoints for enrollment and registration of identities.  This test
+ *   suite fizzled out when requiring fabric-ca-client to run locally (e.g. in or next to fabctl), connecting
+ *   to the CA REST service running somewhere in the kube.  Effectively this needs both an ingress into the
+ *   cluster AND the fabric binary to run locally.   For this test case I ended up setting up a local port
+ *   forward (which is possible to initialize dynamically using the Fabric8 / kube API client) and running
+ *   fabric binary commands on my machine.  This path "works" but is really messy... back to the drawing
+ *   board.
+ *
+ * - Mounting an MSP context / directory structure into pods is onerous when each of the individual files
+ *   is being managed as a key in a configmap / secret.  A better approach is to craft a SINGLE descriptor
+ *   for the MSP context, store it in a cm/secret, and unfurl it in the fabric nodes using an init container
+ *   (or better:  we can just teach core fabric to read the MSP descriptor.)
+ *
+ *
+ * In general, this test case was "two steps forward, one backwards..."   Let's fall back to using cryptogen
+ * to inflate MSP assets on the local drive, mangle them into local MSP YAML descriptors, and moosh into k8s
+ * using cm/secrets and an init container to unfurl the context at runtime.   For "v2" we will attack the
+ * CA configuration and remove the dependency on cryptogen.
  */
 @Slf4j
 public class FabricCAOperationsGuideTest extends TestBase
