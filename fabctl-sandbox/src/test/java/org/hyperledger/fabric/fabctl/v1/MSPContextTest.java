@@ -49,6 +49,52 @@ import static org.junit.jupiter.api.Assertions.*;
  * "MSPDir" attribute currently in fabric config.
  *
  * Let's roll up some MSP contexts, and see how this goes!
+ *
+ *
+ *
+ *
+ * TEST OUTCOMES:
+ *
+ * - hyperledgendary/fabric-hyper-kube/fabctl-msp-unfurler is a VERY rough cut at a program which will
+ *   read msp descriptors mounted in CM/secrets, unfurling into an MSP folder structure in the scope
+ *   of the network nodes.  This is suitable for specifying the MSPDir attribute in the fabric config.
+ *
+ * - While this test is incomplete, the overall approach feels right.  At a minimum it is a HUGE
+ *   improvement over the flattened structures outlined in CryptoXYZZYConfigMapTest.
+ *
+ * - I checked the behavior of mounting the unfurled MSP context using static YAML / manual kubectl,
+ *   rather than dynamically generating the remote volumes from a test driver and making assertions
+ *   in this test routine.  We could do so, but ... the approach seems sound enough to skip forward
+ *   and go through the config of the test network using the cryptogen local assets.
+ *
+ *
+ *
+ * NEXT STEPS:
+ *
+ * - use cryptogen to specify the network topology as MSP assets on the local drive.
+ *
+ * - Describe a NetworkConfig matching the topology of the test network.
+ *
+ * - For each of the network nodes, expand on "Context" by running deployments in ENV + { msp-context } scope.
+ *
+ * - Construct the org/orderer/peer network, specifying initContainers and unfurling msp-descriptors before "running things"
+ *
+ * - Install chaincode, run queries.
+ *
+ * - Use the LOCAL MSP files (or possibly the k8s msp descriptor maps??) to generate a gateway connection profile.
+ *
+ * AND
+ *
+ * - run gateway client app locally (via port-forward to gateway peer node)
+ *
+ * - run gateway client app in cluster
+ *
+ *
+ * This is an effective plateau for the "V1" approach, using cryptogen + MSP descriptor context.
+ *
+ * For a "V2" approach, replace the cryptogen with a network topology describing a set of CAs.  This is harder than
+ * it seems, as the CA clients need to run somewhere with access to both the peer binaries and an HTTP(s) route into
+ * the CAs.
  */
 @Slf4j
 public class MSPContextTest extends TestBase
@@ -175,7 +221,84 @@ public class MSPContextTest extends TestBase
                                      // todo: add some metadata labels.
                                      .endMetadata()
                                      .withImmutable(true)
-                                     .withData(Map.of(msp.id, yamlMapper.writeValueAsString(msp)))
+                                     .withData(Map.of(msp.name + ".yaml", yamlMapper.writeValueAsString(msp)))
                                      .build());
     }
+
+
+
+
+    //
+    // This is an example peer yaml that includes an init container running the msp-unfurler.
+    //
+    // At runtime, the contents of the MSP folder will be unfurled into /var/hyperledger/fabric/xyzzy/orderer2.example.com/msp
+    //
+
+    /*
+
+    ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: test-network
+  name: org1-peer1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: org1-peer1
+  template:
+    metadata:
+      labels:
+        app: org1-peer1
+    spec:
+      containers:
+      - name: main
+        image: hyperledger/fabric-peer:2.3.2
+        imagePullPolicy: Always
+        envFrom:
+          - configMapRef:
+              name: org1-peer1-config
+        ports:
+          - containerPort: 7051
+          - containerPort: 7052
+          - containerPort: 9443
+        volumeMounts:
+          - name: fabric-volume
+            mountPath: /var/hyperledger/fabric
+          - name: fabric-config
+            mountPath: /var/hyperledger/fabric/config
+
+          - name: msp-volume
+            mountPath: /var/hyperledger/fabric/xyzzy
+
+      initContainers:
+      - name: msp-unfurl
+        image: hyperledgendary/fabric-hyper-kube/fabctl-msp-unfurler
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: INPUT_FOLDER
+            value: /var/hyperledger/fabric/msp-descriptors
+          - name: OUTPUT_FOLDER
+            value: /var/hyperledger/fabric/xyzzy
+        volumeMounts:
+          - name: msp-config
+            mountPath: /var/hyperledger/fabric/msp-descriptors
+          - name: msp-volume
+            mountPath: /var/hyperledger/fabric/xyzzy
+
+      volumes:
+        - name: fabric-volume
+          persistentVolumeClaim:
+            claimName: fabric
+        - name: fabric-config
+          configMap:
+            name: fabric-config
+        - name: msp-config
+          configMap:
+            name: msp-com.example.orderer2
+        - name: msp-volume
+          emptyDir: {}
+
+     */
 }
