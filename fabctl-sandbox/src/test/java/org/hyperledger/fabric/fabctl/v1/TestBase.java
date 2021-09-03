@@ -32,6 +32,8 @@ public class TestBase
 
     protected static final YAMLMapper yamlMapper = new YAMLMapper();
 
+    protected static final String FABRIC_VERSION = "2.3.2";
+
     protected static final String TEST_NAMESPACE = "test-network";
 
 
@@ -56,17 +58,19 @@ public class TestBase
     /**
      * This can be improved, but it's not super relevant HOW the context is initialized.  Just experimenting here...
      */
-    protected static Environment loadEnvironment(final String path)
+    protected static Environment loadEnv(final String resourcePath)
     {
+        log.info("Loading environment from resource bundle: {}", resourcePath);
+
         final Properties props = new Properties();
 
         try
         {
-            props.load(CryptoXYZZYConfigMapTest.class.getResourceAsStream(path));
+            props.load(TestBase.class.getResourceAsStream(resourcePath));
         }
         catch (IOException ex)
         {
-            fail("Could not load resource bundle " + path, ex);
+            fail("Could not load resource bundle " + resourcePath, ex);
         }
 
         final Environment environment = new Environment();
