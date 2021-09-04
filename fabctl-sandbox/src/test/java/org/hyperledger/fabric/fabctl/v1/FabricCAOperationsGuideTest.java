@@ -102,16 +102,16 @@ public class FabricCAOperationsGuideTest extends TestBase
 
     public NetworkConfig describeNetwork()
     {
-        final OrganizationConfig org0 = new OrganizationConfig("Org0");
+        final OrganizationConfig org0 = new OrganizationConfig("Org0", "Org0MSP");
         org0.cas.add(new CAConfig("rca-org0", loadEnvironment("Org0-CA.properties")));
         org0.orderers.add(new OrdererConfig("Orderer", loadEnvironment("Org0-Orderer.properties")));
 
-        final OrganizationConfig org1 = new OrganizationConfig("Org1");
+        final OrganizationConfig org1 = new OrganizationConfig("Org1", "Org1MSP");
         org1.cas.add(new CAConfig("rca-org1", loadEnvironment("Org1-CA.properties")));
         org1.peers.add(new PeerConfig("Peer1", loadEnvironment("Org1-Peer1.properties")));
         org1.peers.add(new PeerConfig("Peer2", loadEnvironment("Org1-Peer2.properties")));
 
-        final OrganizationConfig org2 = new OrganizationConfig("Org2");
+        final OrganizationConfig org2 = new OrganizationConfig("Org2", "Org2MSP");
         org2.cas.add(new CAConfig("rca-org2", loadEnvironment("Org2-CA.properties")));
         org2.peers.add(new PeerConfig("Peer1", loadEnvironment("Org2-Peer1.properties")));
         org2.peers.add(new PeerConfig("Peer2", loadEnvironment("Org2-Peer2.properties")));

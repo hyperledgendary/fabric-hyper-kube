@@ -14,14 +14,9 @@ import lombok.Data;
 public class OrganizationConfig
 {
     public final String name;
-    public String mspID;
+    public final String mspID;
 
     public final List<CAConfig> cas = new ArrayList<>();
     public final List<PeerConfig> peers = new ArrayList<>();
     public final List<OrdererConfig> orderers = new ArrayList<>();
-
-    public OrganizationConfig(final String name)
-    {
-        this.name = name;
-    }
 }
