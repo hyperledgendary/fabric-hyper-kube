@@ -59,18 +59,28 @@ docker run \
 ```
 
 ```shell
-???
-
-echo -n | ./gradlew test --tests InitFabricNetworkTest      # network.sh up 
-echo -n | ./gradlew test --tests CreateAndJoinChannelTest   # network.sh createChannel
-echo -n | ./gradlew test --tests ChaincodeSandboxTest       # network.sh deployCC 
+echo -n | ./gradlew test --tests org.hyperledger.fabric.fabctl.v1.InitFabricNetworkTest      # network.sh up 
+# echo -n | ./gradlew test --tests CreateAndJoinChannelTest   # network.sh createChannel
+# echo -n | ./gradlew test --tests ChaincodeSandboxTest       # network.sh deployCC 
 ```
 
-- TODO: don't run cryptogen in the cluster.  Set up a CA
-- TODO: introduce an _MSP context_ and load into k8s secrets/configmaps
-- Note: the above `echo -n |` is set up to give gradle a dedicated stdin.  (Without it, the commands can 
-  not be pasted into a terminal window as a sequential block.)
+#### v2
 
+Crypto spec is obtained with `fabric-ca-client` from a network of CAs. 
+
+This _can_ work but it gets a little rough.  Setting up the CAs is straightforward, but it's not clear 
+how to easily CONNECT to the CAs from the system running fabctl.  To bridge into the CA, we'll need to 
+set up either an ingress controller OR a temporary port-forward.  Also we'll need to run the fabric-ca-client 
+binary locally, which is not ideal.  (The alternative is to reproduce the fabric-ca-client functionality using 
+ONLY the REST SDK.)
+
+- TODO: don't run cryptogen in the cluster.  Set up a CA
+
+```shell
+??? 
+???
+??? 
+```
 
 ### Chaincode Query 
 

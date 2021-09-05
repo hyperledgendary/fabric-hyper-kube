@@ -36,7 +36,6 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * todo: add some metadata labels to the configmap (e.g. id, org, name, type, etc .etc. )
  * todo: no xyzzy in the volume mount path
- * todo: launch peers
  * todo: refactor the Deployment, Service, and Job spec construction (v2 is OK)
  *
  * TEST OUTCOMES:
@@ -53,6 +52,8 @@ import static org.junit.jupiter.api.Assertions.*;
 public class InitFabricNetworkTest extends TestBase
 {
     private static final String FABRIC_VERSION = "2.3.2";
+
+    protected static final String CCS_BUILDER_IMAGE = "hyperledgendary/fabric-ccs-builder";
 
     @Test
     public void testInitFabricNetwork() throws Exception
@@ -88,7 +89,7 @@ public class InitFabricNetworkTest extends TestBase
         //
         // Launch the peers in the correct context (env + MSP), blocking until all deployments are ready.
         //
-//        launchPeers(network);
+        launchPeers(network);
     }
 
     private void createGenesisBlock(final NetworkConfig network) throws Exception
@@ -252,13 +253,252 @@ public class InitFabricNetworkTest extends TestBase
         log.info("All peers are up.");
     }
 
-    private Deployment launchPeer(final PeerConfig peerConfig) throws Exception
+    private Deployment launchPeer(final PeerConfig config) throws Exception
     {
-        log.info("Launching peer {}", peerConfig.name);
+        log.info("Launching peer {}", config.name);
 
-        fail("not implemented");
+        //
+        // environment variables
+        //
+        final List<EnvVar> env = new ArrayList<>();
+        for (Entry<String,String> e : config.environment.entrySet())
+        {
+            env.add(new EnvVarBuilder()
+                            .withName(e.getKey())
+                            .withValue(e.getValue())
+                            .build());
+        }
 
-        return null;
+
+        //
+        // NODE Volume mounts:
+        //
+        final List<VolumeMount> nodeVolumeMounts =
+                Arrays.asList(new VolumeMountBuilder()
+                                      .withName("fabric-volume")
+                                      .withMountPath("/var/hyperledger/fabric")
+                                      .build(),
+                              new VolumeMountBuilder()
+                                      .withName("fabric-config")
+                                      .withMountPath("/var/hyperledger/fabric/config")
+                                      .build(),
+                              new VolumeMountBuilder()
+                                      .withName("ccs-builder")
+                                      .withMountPath("/var/hyperledger/fabric/ccs-builder/bin")
+                                      .build(),
+                              new VolumeMountBuilder()
+                                      .withName("msp-volume")
+                                      .withMountPath("/var/hyperledger/fabric/xyzzy")
+                                      .build());
+
+
+        //
+        // Pod volumes.  Note that this mounts the empty volume and a config map for each MSP context in scope.
+        //
+        final List<Volume> volumes = new ArrayList<>();
+
+        volumes.add(new VolumeBuilder()
+                            .withName("fabric-volume")
+                            .withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSourceBuilder()
+                                                               .withClaimName("fabric")
+                                                               .build())
+                            .build());
+        volumes.add(new VolumeBuilder()
+                            .withName("fabric-config")
+                            .withConfigMap(new ConfigMapVolumeSourceBuilder()
+                                                   .withName("fabric-config")
+                                                   .build())
+                            .build());
+
+        volumes.add(new VolumeBuilder()
+                            .withName("ccs-builder")
+                            .withNewEmptyDir()
+                            .endEmptyDir()
+                            .build());
+
+        volumes.add(new VolumeBuilder()
+                            .withName("msp-volume")
+                            .withNewEmptyDir()
+                            .endEmptyDir()
+                            .build());
+
+
+
+        //
+        // Add a config map for the MSP context.
+        //
+        // TODO: we will have multiple MSP contexts in a node runtime.  Currently this collides on name.
+        //
+        for (MSPDescriptor msp : config.msps)
+        {
+            log.info("Appending msp context {}", msp.id);
+
+            volumes.add(new VolumeBuilder()
+                                .withName("msp-config")   // todo : collides on name
+                                .withConfigMap(new ConfigMapVolumeSourceBuilder()
+                                                       .withName(msp.name)
+                                                       .build())
+                                .build());
+        }
+
+
+        //
+        // Ports
+        //
+        final List<ContainerPort> containerPorts =
+                Arrays.asList(
+                        new ContainerPortBuilder()
+                                .withName("gossip")
+                                .withProtocol("TCP")
+                                .withContainerPort(7051)
+                                .build(),
+                        new ContainerPortBuilder()
+                                .withName("chaincode")
+                                .withProtocol("TCP")
+                                .withContainerPort(7052)
+                                .build(),
+                        new ContainerPortBuilder()
+                                .withName("operations")
+                                .withProtocol("TCP")
+                                .withContainerPort(9443)
+                                .build()
+                );
+
+
+
+        //
+        // Please stop using the builder to construct these with this pattern.  It's ugly, excessive, and can be improved.
+        //
+        // All this needs to do is load a yaml template from the resource bundle and substitute config.getName() + env.
+        //
+        // @formatter:off
+        final Deployment template =
+                new DeploymentBuilder()
+                        .withApiVersion("apps/v1")
+                        .withNewMetadata()
+                        .withName(config.getName())
+                        .endMetadata()
+                        .withNewSpec()
+                        .withReplicas(1)
+                        .withNewSelector()
+                        .withMatchLabels(Map.of("app", config.getName()))
+                        .endSelector()
+                        .withNewTemplate()
+                        .withNewMetadata()
+                        .withLabels(Map.of("app", config.getName()))
+                        // todo: other labels here.
+                        .endMetadata()
+                        .withNewSpec()
+
+                        //
+                        // main peer container
+                        //
+                        .addNewContainer()
+                        .withName("main")
+                        .withImage("hyperledger/fabric-peer:" + FABRIC_VERSION)
+                        .withEnv(env)
+                        .withVolumeMounts(nodeVolumeMounts)
+                        .withPorts(containerPorts)
+                        .endContainer()
+
+
+                        //
+                        // This init container copies the ccs-builder binaries into the peer image for external chaincode.
+                        //
+                        .addNewInitContainer()
+                        .withName("fabric-ccs-builder")
+                        .withImage(CCS_BUILDER_IMAGE)
+                        .withImagePullPolicy("IfNotPresent")
+                        .withCommand("sh", "-c")
+                        .withArgs("cp /go/bin/* /var/hyperledger/fabric/ccs-builder/bin/")
+                        .withVolumeMounts(Arrays.asList(new VolumeMountBuilder()
+                                                                .withName("ccs-builder")
+                                                                .withMountPath("/var/hyperledger/fabric/ccs-builder/bin")
+                                                                .build()))
+                        .endInitContainer()
+
+
+                        //
+                        // This init container unfurls the MSP context into an empty volume
+                        //
+                        .addNewInitContainer()
+                        .withName("msp-unfurl")
+                        .withImage("hyperledgendary/fabric-hyper-kube/fabctl-msp-unfurler")
+                        .withImagePullPolicy("IfNotPresent")
+                        .addToEnv(new EnvVarBuilder()
+                                          .withName("INPUT_FOLDER")
+                                          .withValue("/var/hyperledger/fabric/msp-descriptors")
+                                          .build())
+                        .addToEnv(new EnvVarBuilder()
+                                          .withName("OUTPUT_FOLDER")
+                                          .withValue("/var/hyperledger/fabric/xyzzy")
+                                          .build())
+                        .withVolumeMounts(Arrays.asList(new VolumeMountBuilder()
+                                                                .withName("msp-config")
+                                                                .withMountPath("/var/hyperledger/fabric/msp-descriptors")
+                                                                .build(),
+                                                        new VolumeMountBuilder()
+                                                                .withName("msp-volume")
+                                                                .withMountPath("/var/hyperledger/fabric/xyzzy")
+                                                                .build()))
+                        .endInitContainer()
+
+
+                        .withVolumes(volumes)
+
+                        .endSpec()
+                        .endTemplate()
+                        .endSpec()
+                        .build();
+        // @formatter:on
+
+        final Deployment deployment =
+                client.apps()
+                      .deployments()
+                      .create(template);
+
+        log.info("Created deployment:\n{}", yamlMapper.writeValueAsString(deployment));
+
+
+
+        //
+        // Create a service for the peer so that it may be reached by adjacent pods.
+        //
+        final List<ServicePort> servicePorts =
+                Arrays.asList(
+                        new ServicePortBuilder()
+                                .withName("gossip")
+                                .withProtocol("TCP")
+                                .withPort(7051)
+                                .build(),
+                        new ServicePortBuilder()
+                                .withName("chaincode")
+                                .withProtocol("TCP")
+                                .withPort(7052)
+                                .build(),
+                        new ServicePortBuilder()
+                                .withName("operations")
+                                .withProtocol("TCP")
+                                .withPort(9443)
+                                .build()
+                );
+
+        // @formatter:off
+        final Service service =
+                client.services()
+                      .create(new ServiceBuilder()
+                                      .withNewMetadata()
+                                      .withName(config.getName())
+                                      .endMetadata()
+                                      .withNewSpec()
+                                      .withSelector(Map.of("app", config.getName()))
+                                      .withPorts(servicePorts)
+                                      .endSpec()
+                                      .build());
+
+        log.info("Created service\n{}", yamlMapper.writeValueAsString(service));
+
+        return deployment;
     }
 
     // @Test
