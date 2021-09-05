@@ -60,7 +60,7 @@ docker run \
 
 ```shell
 echo -n | ./gradlew test --tests org.hyperledger.fabric.fabctl.v1.InitFabricNetworkTest      # network.sh up 
-# echo -n | ./gradlew test --tests CreateAndJoinChannelTest   # network.sh createChannel
+echo -n | ./gradlew test --tests org.hyperledger.fabric.fabctl.v1.CreateAndJoinChannelTest   # network.sh createChannel
 # echo -n | ./gradlew test --tests ChaincodeSandboxTest       # network.sh deployCC 
 ```
 

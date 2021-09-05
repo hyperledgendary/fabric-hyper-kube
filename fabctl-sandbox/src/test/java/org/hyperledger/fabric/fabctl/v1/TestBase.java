@@ -115,7 +115,15 @@ public class TestBase
 
     protected int execute(final FabricCommand command,
                           final Environment environment,
-                          final MSPDescriptor[] msps)
+                          final List<MSPDescriptor> mspList)
+        throws Exception
+    {
+        return execute(command, environment, mspList.toArray(new MSPDescriptor[0]));
+    }
+
+    protected int execute(final FabricCommand command,
+                          final Environment environment,
+                          final MSPDescriptor... msps)
         throws Exception
     {
         log.info("Launching command:\n{}", yamlMapper.writeValueAsString(command));

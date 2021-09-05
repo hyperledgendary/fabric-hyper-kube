@@ -127,7 +127,7 @@ public class InitFabricNetworkTest extends TestBase
                                                     "-channelID", "test-system-channel-name",
                                                     "-outputBlock", "/var/hyperledger/fabric/channel-artifacts/genesis.block"),
                              env,
-                             msps.toArray(new MSPDescriptor[0])));
+                             msps));
 
 
         // todo: is this part of the network init, or the channel construction?
@@ -139,7 +139,7 @@ public class InitFabricNetworkTest extends TestBase
                                                     "-channelID", "mychannel",
                                                     "-asOrg", "Org1MSP"),
                              env,
-                             msps.toArray(new MSPDescriptor[0])));
+                             msps));
 
 
         // todo: is this part of the network init, or the channel construction?
@@ -151,7 +151,7 @@ public class InitFabricNetworkTest extends TestBase
                                                     "-channelID",               "mychannel",
                                                     "-asOrg",                   "Org2MSP"),
                              env,
-                             msps.toArray(new MSPDescriptor[0])));
+                             msps));
     }
 
     /**
