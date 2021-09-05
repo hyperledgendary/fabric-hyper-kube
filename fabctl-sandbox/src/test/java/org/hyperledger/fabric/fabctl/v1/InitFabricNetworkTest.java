@@ -18,11 +18,9 @@ import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.hyperledger.fabric.fabctl.v0.DeploymentUtil;
+import org.hyperledger.fabric.fabctl.v0.command.ConfigTXGenCommand;
 import org.hyperledger.fabric.fabctl.v1.msp.MSPDescriptor;
-import org.hyperledger.fabric.fabctl.v1.network.NetworkConfig;
-import org.hyperledger.fabric.fabctl.v1.network.OrdererConfig;
-import org.hyperledger.fabric.fabctl.v1.network.OrganizationConfig;
-import org.hyperledger.fabric.fabctl.v1.network.PeerConfig;
+import org.hyperledger.fabric.fabctl.v1.network.*;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -77,15 +75,15 @@ public class InitFabricNetworkTest extends TestBase
 
 
         //
-        // Create the genesis block for the test network.
-        //
-//        createGenesisBlock(network);
-
-
-        //
         // Create an MSP configuration map for each node in the network.
         //
         createMSPDescriptorConfigMaps(network);
+
+
+        //
+        // Create the genesis block for the test network.
+        //
+        createGenesisBlock(network);
 
 
         //
@@ -104,7 +102,62 @@ public class InitFabricNetworkTest extends TestBase
     {
         log.info("Creating genesis block");
 
-        fail("not implemented");
+        final Environment env = new Environment();
+        env.put("FABRIC_CFG_PATH", "/var/hyperledger/fabric");
+
+        //
+        // When configtxgen runs, the scope must include the msp descriptors for each organization
+        // and the tls context for each orderer in the network.
+        //
+        final List<MSPDescriptor> msps = new ArrayList<>();
+
+        for (final OrganizationConfig org : network.organizations)
+        {
+            //
+            // Add organization msp contexts
+            //
+            msps.addAll(org.msps);
+
+            //
+            // add orderer msp for raft TLS certificates
+            //
+            for (final OrdererConfig orderer : org.orderers)
+            {
+                msps.addAll(orderer.msps);
+            }
+        }
+
+
+        assertEquals(0,
+                     execute(new ConfigTXGenCommand("configtxgen",
+                                                    "-profile", "TwoOrgsOrdererGenesis",
+                                                    "-channelID", "test-system-channel-name",
+                                                    "-outputBlock", "/var/hyperledger/fabric/channel-artifacts/genesis.block"),
+                             env,
+                             msps.toArray(new MSPDescriptor[0])));
+
+
+        // todo: is this part of the network init, or the channel construction?
+        log.info("Setting anchor peers");
+        assertEquals(0,
+                     execute(new ConfigTXGenCommand("configtxgen",
+                                                    "-profile", "TwoOrgsChannel",
+                                                    "-outputAnchorPeersUpdate", "/var/hyperledger/fabric/channel-artifacts/Org1MSPanchors.tx",
+                                                    "-channelID", "mychannel",
+                                                    "-asOrg", "Org1MSP"),
+                             env,
+                             msps.toArray(new MSPDescriptor[0])));
+
+
+        // todo: is this part of the network init, or the channel construction?
+        assertEquals(0,
+                     execute(new ConfigTXGenCommand("configtxgen",
+                                                    "-profile",                 "TwoOrgsChannel",
+                                                    "-outputAnchorPeersUpdate", "/var/hyperledger/fabric/channel-artifacts/Org2MSPanchors.tx",
+                                                    "-channelID",               "mychannel",
+                                                    "-asOrg",                   "Org2MSP"),
+                             env,
+                             msps.toArray(new MSPDescriptor[0])));
     }
 
     /**
@@ -118,6 +171,12 @@ public class InitFabricNetworkTest extends TestBase
 
         for (OrganizationConfig org : network.organizations)
         {
+            // org msp context
+            for (MSPDescriptor msp : org.msps)
+            {
+                configMaps.add(createMSPConfigMap(msp));
+            }
+
             for (PeerConfig peer : org.peers)
             {
                 for (MSPDescriptor msp : peer.msps)
@@ -239,8 +298,8 @@ public class InitFabricNetworkTest extends TestBase
      */
     private ConfigMap createMSPConfigMap(final MSPDescriptor msp) throws Exception
     {
-        final String cmName = "msp-" + msp.name;
-        final String mspKey = "msp-" + msp.name + ".yaml";
+        final String cmName = msp.name;
+        final String mspKey = msp.name + ".yaml";
         final String mspVal = yamlMapper.writeValueAsString(msp);
 
         return client.configMaps()
@@ -332,7 +391,7 @@ public class InitFabricNetworkTest extends TestBase
             volumes.add(new VolumeBuilder()
                                 .withName("msp-config")   // todo : collides on name
                                 .withConfigMap(new ConfigMapVolumeSourceBuilder()
-                                                       .withName("msp-" + msp.id)
+                                                       .withName(msp.name)
                                                        .build())
                                 .build());
         }

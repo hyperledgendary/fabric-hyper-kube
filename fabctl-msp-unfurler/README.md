@@ -10,7 +10,7 @@ a series of configmaps / secrets stored in Kubernetes.
 ## Build 
 
 ```shell
-./gradlew build 
+echo -n | ./gradlew build 
 
 docker build -t hyperledgendary/fabric-hyper-kube/fabctl-msp-unfurler .
 

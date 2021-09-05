@@ -43,24 +43,26 @@ class TestNetwork extends NetworkConfig
             //
             final OrganizationConfig ordererOrg = 
                     new OrganizationConfig("OrdererOrg",
-                                           "OrdererMSP");
+                                           "OrdererMSP",
+                                           new MSPDescriptor("msp-com.example", // "example.com",
+                                                             new File("config/crypto-config/ordererOrganizations/example.com")));
 
             ordererOrg.getOrderers()
                       .add(new OrdererConfig("orderer1",
                                              loadEnvironment("orderer1.properties"),
-                                             new MSPDescriptor("orderer1.example.com",
+                                             new MSPDescriptor("msp-com.example.orderer1", // "orderer1.example.com",
                                                                new File("config/crypto-config/ordererOrganizations/example.com/orderers/orderer1.example.com"))));
 
             ordererOrg.getOrderers()
                       .add(new OrdererConfig("orderer2",
                                              loadEnvironment("orderer2.properties"),
-                                             new MSPDescriptor("orderer2.example.com",
+                                             new MSPDescriptor("msp-com.example.orderer2",//"orderer2.example.com",
                                                                new File("config/crypto-config/ordererOrganizations/example.com/orderers/orderer2.example.com"))));
 
             ordererOrg.getOrderers()
                       .add(new OrdererConfig("orderer3",
                                              loadEnvironment("orderer3.properties"),
-                                             new MSPDescriptor("orderer3.example.com",
+                                             new MSPDescriptor("msp-com.example.orderer3",//"orderer3.example.com",
                                                                new File("config/crypto-config/ordererOrganizations/example.com/orderers/orderer3.example.com"))));
 
 
@@ -70,17 +72,19 @@ class TestNetwork extends NetworkConfig
             // 
             final OrganizationConfig org1 =
                     new OrganizationConfig("Org1",
-                                           "Org1MSP");
+                                           "Org1MSP",
+                                           new MSPDescriptor("msp-com.example.org1", // "org1.example.com",
+                                                             new File("config/crypto-config/peerOrganizations/org1.example.com")));
 
             org1.getPeers()
                 .add(new PeerConfig("org1-peer1",
                                     loadEnvironment("org1-peer1.properties"),
-                                    new MSPDescriptor("org1-peer1.org1.example.com",
+                                    new MSPDescriptor("msp-com.example.org1.org1-peer1",//"org1-peer1.org1.example.com",
                                                       new File("config/crypto-config/peerOrganizations/org1.example.com/peers/org1-peer1.org1.example.com"))));
             org1.getPeers()
                 .add(new PeerConfig("org1-peer2",
                                     loadEnvironment("org1-peer2.properties"),
-                                    new MSPDescriptor("org1-peer2.org1.example.com",
+                                    new MSPDescriptor("msp-com.example.org1.org1-peer2",//"org1-peer2.org1.example.com",
                                                       new File("config/crypto-config/peerOrganizations/org1.example.com/peers/org1-peer2.org1.example.com"))));
 
 
@@ -90,17 +94,20 @@ class TestNetwork extends NetworkConfig
             // 
             final OrganizationConfig org2 =
                     new OrganizationConfig("Org2",
-                                           "Org1MSP");
+                                           "Org1MSP",
+                                           new MSPDescriptor("msp-com.example.org2", //"org2.example.com",
+                                                             new File("config/crypto-config/peerOrganizations/org2.example.com")));
+
 
             org2.getPeers()
                 .add(new PeerConfig("org2-peer1",
                                     loadEnvironment("org2-peer1.properties"),
-                                    new MSPDescriptor("org2-peer1.org1.example.com",
+                                    new MSPDescriptor("msp-com.example.org2.org2-peer1",//"org2-peer1.org1.example.com",
                                                       new File("config/crypto-config/peerOrganizations/org2.example.com/peers/org2-peer1.org2.example.com"))));
             org2.getPeers()
                 .add(new PeerConfig("org2-peer2",
                                     loadEnvironment("org2-peer2.properties"),
-                                    new MSPDescriptor("org2-peer2.org1.example.com",
+                                    new MSPDescriptor("msp-com.example.org2.org2-peer2",//"org2-peer2.org1.example.com",
                                                       new File("config/crypto-config/peerOrganizations/org2.example.com/peers/org2-peer2.org2.example.com"))));
 
 

@@ -34,8 +34,6 @@ public class Main
      */
     public static void main(final String[] args)
     {
-        log.info("hello, world");
-
         final String inputFolder = System.getenv("INPUT_FOLDER");
         final String outputFolder = System.getenv("OUTPUT_FOLDER");
 
@@ -74,10 +72,10 @@ public class Main
             throws IOException
     {
         final JsonNode node = yamlMapper.readTree(descriptor);
-        log.info(yamlMapper.writeValueAsString(node));
+        // log.debug(yamlMapper.writeValueAsString(node));  // yaml contains secret spec - do not emit to stdout.
 
         final File mspDir = new File(outputDir, node.get("id").asText());
-        log.info("Unfurling MSP descriptor {} --> {}", descriptor, mspDir);
+        log.info("Unfurling {} --> {}", descriptor, mspDir);
 
         if (mspDir.exists())
         {
@@ -90,15 +88,15 @@ public class Main
 
     private static void unfurl(final File f, final JsonNode node) throws IOException
     {
-        // no node?  no unfurling
-        if (node == null)
+        // no node?  no unfurling!
+        if (node == null || node.isNull())
         {
             return;
         }
 
         if (node.isTextual())
         {
-            log.info("writing {}", f);
+            log.info("    {}", f);
 
             try (final FileOutputStream fos = new FileOutputStream(f))
             {
