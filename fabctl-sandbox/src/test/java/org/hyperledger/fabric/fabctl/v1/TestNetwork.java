@@ -23,7 +23,17 @@ import static org.junit.jupiter.api.Assertions.fail;
  *
  * This test network will read the node environment scopes from the /resources/config/v1/networks/test-network resource bundle.
  *
- * Nodes in the test network include an MSP Descriptor, translated from a local crypto-config folder output by cryptogen. 
+ * Nodes in the test network include an MSP Descriptor, translated from a local crypto-config folder output by cryptogen.
+ *
+ * TEST OUTCOMES:
+ *
+ * - The approach works OK but it needs to be streamlined.  This network descriptor is 1000% bloated in current form.
+ *
+ * - Where will users / enrollments / registrations occur and be stored?
+ *
+ * - It seems like MSP descriptors should be REFERENCED not embedded in this structure.  Something inspired from k8s
+ *   such as kube references (envFrom, secretRef, configMapRef, or Argo workflowRef,... ) 
+ *
  */
 class TestNetwork extends NetworkConfig
 {
@@ -44,47 +54,59 @@ class TestNetwork extends NetworkConfig
             final OrganizationConfig ordererOrg = 
                     new OrganizationConfig("OrdererOrg",
                                            "OrdererMSP",
-                                           new MSPDescriptor("msp-com.example", // "example.com",
+                                           new MSPDescriptor("msp-com.example",
                                                              new File("config/crypto-config/ordererOrganizations/example.com")));
 
             ordererOrg.getOrderers()
                       .add(new OrdererConfig("orderer1",
                                              loadEnvironment("orderer1.properties"),
-                                             new MSPDescriptor("msp-com.example.orderer1", // "orderer1.example.com",
+                                             new MSPDescriptor("msp-com.example.orderer1",
                                                                new File("config/crypto-config/ordererOrganizations/example.com/orderers/orderer1.example.com"))));
 
             ordererOrg.getOrderers()
                       .add(new OrdererConfig("orderer2",
                                              loadEnvironment("orderer2.properties"),
-                                             new MSPDescriptor("msp-com.example.orderer2",//"orderer2.example.com",
+                                             new MSPDescriptor("msp-com.example.orderer2",
                                                                new File("config/crypto-config/ordererOrganizations/example.com/orderers/orderer2.example.com"))));
 
             ordererOrg.getOrderers()
                       .add(new OrdererConfig("orderer3",
                                              loadEnvironment("orderer3.properties"),
-                                             new MSPDescriptor("msp-com.example.orderer3",//"orderer3.example.com",
+                                             new MSPDescriptor("msp-com.example.orderer3",
                                                                new File("config/crypto-config/ordererOrganizations/example.com/orderers/orderer3.example.com"))));
 
 
             
             //
-            // org1 : two peers 
+            // org1 : two peers + admin context in peer1
             // 
             final OrganizationConfig org1 =
                     new OrganizationConfig("Org1",
                                            "Org1MSP",
-                                           new MSPDescriptor("msp-com.example.org1", // "org1.example.com",
+                                           new MSPDescriptor("msp-com.example.org1",
                                                              new File("config/crypto-config/peerOrganizations/org1.example.com")));
 
+            //
+            // This is an awful hack but org1-peer1 needs an org Admin context MSP in order to run the CLI (cc query from shell)
+            /// AND it needs the orderer1 tls/ca.crt...
+            // todo: what's the correct way to specify users, enrollments, admin contexts?   Figure this out when switching to the CA.
+            // todo: doesn't the admin MSP User context belong up on the org?
+            // todo: we don't need the entire MSP for distributing the TLS certificates
+            //
             org1.getPeers()
                 .add(new PeerConfig("org1-peer1",
                                     loadEnvironment("org1-peer1.properties"),
-                                    new MSPDescriptor("msp-com.example.org1.org1-peer1",//"org1-peer1.org1.example.com",
-                                                      new File("config/crypto-config/peerOrganizations/org1.example.com/peers/org1-peer1.org1.example.com"))));
+                                    new MSPDescriptor("msp-com.example.org1.org1-peer1",
+                                                      new File("config/crypto-config/peerOrganizations/org1.example.com/peers/org1-peer1.org1.example.com")),
+                                    new MSPDescriptor("msp-com.example.org1.user.admin",
+                                                      new File("config/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com")),
+                                    new MSPDescriptor("msp-com.example.orderer1",
+                                                      new File("config/crypto-config/ordererOrganizations/example.com/orderers/orderer1.example.com"))));
+
             org1.getPeers()
                 .add(new PeerConfig("org1-peer2",
                                     loadEnvironment("org1-peer2.properties"),
-                                    new MSPDescriptor("msp-com.example.org1.org1-peer2",//"org1-peer2.org1.example.com",
+                                    new MSPDescriptor("msp-com.example.org1.org1-peer2",
                                                       new File("config/crypto-config/peerOrganizations/org1.example.com/peers/org1-peer2.org1.example.com"))));
 
 
@@ -95,19 +117,19 @@ class TestNetwork extends NetworkConfig
             final OrganizationConfig org2 =
                     new OrganizationConfig("Org2",
                                            "Org1MSP",
-                                           new MSPDescriptor("msp-com.example.org2", //"org2.example.com",
+                                           new MSPDescriptor("msp-com.example.org2",
                                                              new File("config/crypto-config/peerOrganizations/org2.example.com")));
 
 
             org2.getPeers()
                 .add(new PeerConfig("org2-peer1",
                                     loadEnvironment("org2-peer1.properties"),
-                                    new MSPDescriptor("msp-com.example.org2.org2-peer1",//"org2-peer1.org1.example.com",
+                                    new MSPDescriptor("msp-com.example.org2.org2-peer1",
                                                       new File("config/crypto-config/peerOrganizations/org2.example.com/peers/org2-peer1.org2.example.com"))));
             org2.getPeers()
                 .add(new PeerConfig("org2-peer2",
                                     loadEnvironment("org2-peer2.properties"),
-                                    new MSPDescriptor("msp-com.example.org2.org2-peer2",//"org2-peer2.org1.example.com",
+                                    new MSPDescriptor("msp-com.example.org2.org2-peer2",
                                                       new File("config/crypto-config/peerOrganizations/org2.example.com/peers/org2-peer2.org2.example.com"))));
 
 

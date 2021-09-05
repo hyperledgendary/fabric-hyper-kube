@@ -325,22 +325,48 @@ public class InitFabricNetworkTest extends TestBase
 
 
         //
-        // Add a config map for the MSP context.
+        // Add a config map volume for each MSP in scope
         //
-        // TODO: we will have multiple MSP contexts in a node runtime.  Currently this collides on name.
-        //
+        int i = 1;
         for (MSPDescriptor msp : config.msps)
         {
-            log.info("Appending msp context {}", msp.id);
+            log.info("Appending msp volume {}", msp.name);
 
             volumes.add(new VolumeBuilder()
-                                .withName("msp-config")   // todo : collides on name
+                                // .withName(msp.name)  // volumes may not have '.'
+                                .withName("msp-cm-vol-" + i++)
                                 .withConfigMap(new ConfigMapVolumeSourceBuilder()
                                                        .withName(msp.name)
                                                        .build())
                                 .build());
         }
 
+
+        final List<VolumeMount> initContainerVolumeMounts = new ArrayList<>();
+
+        //
+        // Always mount the volume where msp descriptors will be unfurled.
+        //
+        initContainerVolumeMounts.add(new VolumeMountBuilder()
+                                              .withName("msp-volume")
+                                              .withMountPath("/var/hyperledger/fabric/xyzzy")
+                                              .build());
+
+        //
+        // Each msp descriptor will be mounted into the init container as a single file.
+        //
+        i = 1;
+        for (final MSPDescriptor msp : config.msps)
+        {
+            log.info("Appending init container volume mount {}", msp.name);
+
+            initContainerVolumeMounts.add(new VolumeMountBuilder()
+                                                  // .withName(msp.name) // volumes may not have '.' in name
+                                                  .withName("msp-cm-vol-" + i++)
+                                                  .withMountPath("/var/hyperledger/fabric/msp-descriptors/" + msp.name + ".yaml")
+                                                  .withSubPath(msp.name + ".yaml")
+                                                  .build());
+        }
 
         //
         // Ports
@@ -361,9 +387,7 @@ public class InitFabricNetworkTest extends TestBase
                                 .withName("operations")
                                 .withProtocol("TCP")
                                 .withContainerPort(9443)
-                                .build()
-                );
-
+                                .build());
 
 
         //
@@ -433,16 +457,8 @@ public class InitFabricNetworkTest extends TestBase
                                           .withName("OUTPUT_FOLDER")
                                           .withValue("/var/hyperledger/fabric/xyzzy")
                                           .build())
-                        .withVolumeMounts(Arrays.asList(new VolumeMountBuilder()
-                                                                .withName("msp-config")
-                                                                .withMountPath("/var/hyperledger/fabric/msp-descriptors")
-                                                                .build(),
-                                                        new VolumeMountBuilder()
-                                                                .withName("msp-volume")
-                                                                .withMountPath("/var/hyperledger/fabric/xyzzy")
-                                                                .build()))
+                        .withVolumeMounts(initContainerVolumeMounts)
                         .endInitContainer()
-
 
                         .withVolumes(volumes)
 

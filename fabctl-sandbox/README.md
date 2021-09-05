@@ -76,7 +76,8 @@ Crypto spec is obtained with `fabric-ca-client` from a network of CAs.
 open a shell to org1-peer1 and:
 ```shell
 kubectl -n test-network exec deploy/org1-peer1 -i -t -- /bin/sh
-export CORE_PEER_MSPCONFIGPATH=/var/hyperledger/fabric/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+# export CORE_PEER_MSPCONFIGPATH=/var/hyperledger/fabric/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp  # v0
+export CORE_PEER_MSPCONFIGPATH=/var/hyperledger/fabric/xyzzy/Admin@org1.example.com/msp  #v1 
 export FABRIC_LOGGING_SPEC=INFO
 
 peer chaincode \
@@ -86,7 +87,7 @@ peer chaincode \
   -n basic \
   -c '{"Args":["CreateAsset","1","blue","35","tom","1000"]}' \
   --tls \
-  --cafile /var/hyperledger/fabric/crypto-config/ordererOrganizations/example.com/orderers/orderer1.example.com/tls/ca.crt \
+  --cafile /var/hyperledger/fabric/xyzzy/orderer1.example.com/tls/ca.crt \
 
 sleep 5
 
