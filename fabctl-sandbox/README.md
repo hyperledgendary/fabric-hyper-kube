@@ -69,19 +69,7 @@ echo -n | ./gradlew test --tests org.hyperledger.fabric.fabctl.v1.ChaincodeSandb
 
 Crypto spec is obtained with `fabric-ca-client` from a network of CAs. 
 
-This _can_ work but it gets a little rough.  Setting up the CAs is straightforward, but it's not clear 
-how to easily CONNECT to the CAs from the system running fabctl.  To bridge into the CA, we'll need to 
-set up either an ingress controller OR a temporary port-forward.  Also we'll need to run the fabric-ca-client 
-binary locally, which is not ideal.  (The alternative is to reproduce the fabric-ca-client functionality using 
-ONLY the REST SDK.)
-
-- TODO: don't run cryptogen in the cluster.  Set up a CA
-
-```shell
-??? 
-???
-??? 
-```
+- todo: Launch CAs + construct MSP descriptors via fabric-ca-client 
 
 ### Chaincode Query 
 
@@ -121,6 +109,7 @@ kubectl -n test-network delete secret --all
 kubectl -n test-network create -f src/test/resources/kube/job-scrub-test-network.yaml
 kubectl -n test-network wait --for=condition=complete --timeout=60s job/job-scrub-fabric-volume
 kubectl -n test-network delete job --all
+rm -rf config/crypto-config/
 ```
 [GOTO Network](#test-network)
 

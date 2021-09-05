@@ -187,6 +187,7 @@ public class ChaincodeSandboxTest extends TestBase
             final MSPDescriptor[] mspContext = new MSPDescriptor[] {
                     new MSPDescriptor("msp-com.example.org1.org1-peer1",  new File("config/crypto-config/peerOrganizations/org1.example.com/peers/org1-peer1.org1.example.com")),
                     new MSPDescriptor("msp-com.example.org1.users.admin", new File("config/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com")),
+                    new MSPDescriptor("msp-com.example.orderer1",         new File("config/crypto-config/ordererOrganizations/example.com/orderers/orderer1.example.com")),
             };
 
 
@@ -297,7 +298,7 @@ public class ChaincodeSandboxTest extends TestBase
                                                  "--package-id", chaincodeID,
                                                  "--sequence", "1",
                                                  "--tls",
-                                                 "--cafile", "/var/hyperledger/fabric/crypto-config/ordererOrganizations/example.com/orderers/orderer1.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"),
+                                                 "--cafile", "/var/hyperledger/fabric/xyzzy/orderer1.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"),
                                  ORG1_PEER1_ENVIRONMENT,
                                  mspContext));
 
@@ -314,7 +315,7 @@ public class ChaincodeSandboxTest extends TestBase
                                                  "--version", "1",
                                                  "--sequence", "1",
                                                  "--tls",
-                                                 "--cafile", "/var/hyperledger/fabric/crypto-config/ordererOrganizations/example.com/orderers/orderer1.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"),
+                                                 "--cafile", "/var/hyperledger/fabric/xyzzy/orderer1.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"),
                                  ORG1_PEER1_ENVIRONMENT,
                                  mspContext));
 
@@ -345,7 +346,7 @@ public class ChaincodeSandboxTest extends TestBase
         final Deployment deployment =
                 client.apps()
                       .deployments()
-                      .create(new DeploymentBuilder()
+                      .createOrReplace(new DeploymentBuilder()
                                       .withApiVersion("apps/v1")
                                       .withNewMetadata()
                                         .withName(descriptor.metadata.getName())
@@ -393,7 +394,7 @@ public class ChaincodeSandboxTest extends TestBase
         // @formatter:on
         final Service service =
                 client.services()
-                      .create(new ServiceBuilder()
+                      .createOrReplace(new ServiceBuilder()
                                       .withNewMetadata()
                                         .withName(descriptor.metadata.getName())
                                       .endMetadata()
