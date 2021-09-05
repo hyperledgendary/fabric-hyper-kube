@@ -31,14 +31,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * TEST OUTCOMES:
  *
- * - ??
+ * - It works!   Not very pretty, but at least it dynamically constructs the channel and joins peers.
  */
 @Slf4j
 public class CreateAndJoinChannelTest extends TestBase
 {
     private static final String CHANNEL = "mychannel";
 
-    
     @Test
     public void testCreateAndJoinChannel() throws Exception
     {
@@ -67,16 +66,16 @@ public class CreateAndJoinChannelTest extends TestBase
             }
         }
         
-//        assertEquals(0,
-//                     execute(new ConfigTXGenCommand("configtxgen", 
-//                                                    "-channelID",             "mychannel", 
-//                                                    "-profile",               "TwoOrgsChannel", 
-//                                                    "-outputCreateChannelTx", "/var/hyperledger/fabric/channel-artifacts/mychannel.tx"), 
-//                             new Environment()
-//                             {{
-//                                 put("FABRIC_CFG_PATH", "/var/hyperledger/fabric");
-//                             }}, 
-//                             msps));
+        assertEquals(0,
+                     execute(new ConfigTXGenCommand("configtxgen",
+                                                    "-channelID",             "mychannel",
+                                                    "-profile",               "TwoOrgsChannel",
+                                                    "-outputCreateChannelTx", "/var/hyperledger/fabric/channel-artifacts/mychannel.tx"),
+                             new Environment()
+                             {{
+                                 put("FABRIC_CFG_PATH", "/var/hyperledger/fabric");
+                             }},
+                             msps));
         
         
         //
@@ -108,68 +107,66 @@ public class CreateAndJoinChannelTest extends TestBase
         //
         // Create the channel.
         //
-//        assertEquals(0, 
-//                     execute(new PeerCommand("peer",
-//                                             "channel", "create",
-//                                             "-c", CHANNEL,
-//                                             "-o", "orderer1:6050",  // net config?
-//                                             "-f", "/var/hyperledger/fabric/channel-artifacts/mychannel.tx",     // files on PVC ?
-//                                             "--outputBlock", "/var/hyperledger/fabric/channel-artifacts/mychannel.block",
-//                                             "--tls",
-//                                             "--cafile", "/var/hyperledger/fabric/xyzzy/orderer1.example.com/tls/ca.crt"),
-//
-//                             // k/v environment variables
-//                             new Environment()
-//                             {{
-//                                 put("FABRIC_LOGGING_SPEC",            "INFO");
-//                                 put("CORE_PEER_TLS_ENABLED",          "true");
-//                                 put("CORE_PEER_TLS_ROOTCERT_FILE",    "/var/hyperledger/fabric/xyzzy/org1-peer1.org1.example.com/tls/ca.crt");
-//                                 put("CORE_PEER_ADDRESS",              "org1-peer1:7051");
-//                                 put("CORE_PEER_LOCALMSPID",           "Org1MSP");
-//                                 put("CORE_PEER_MSPCONFIGPATH",        "/var/hyperledger/fabric/xyzzy/Admin@org1.example.com/msp");
-//                             }},
-//
-//                             ///
-//                             // msp contexts unfurled by the pod's init container.
-//                             //
-//                             List.of(orderer1MSP,
-//                                     org1peer1MSP,
-//                                     org1AdminMSP)
-//                     ));
+        assertEquals(0,
+                     execute(new PeerCommand("peer",
+                                             "channel", "create",
+                                             "-c", CHANNEL,
+                                             "-o", "orderer1:6050",  // net config?
+                                             "-f", "/var/hyperledger/fabric/channel-artifacts/mychannel.tx",     // files on PVC ?
+                                             "--outputBlock", "/var/hyperledger/fabric/channel-artifacts/mychannel.block",
+                                             "--tls",
+                                             "--cafile", "/var/hyperledger/fabric/xyzzy/orderer1.example.com/tls/ca.crt"),
+
+                             // k/v environment variables
+                             new Environment()
+                             {{
+                                 put("FABRIC_LOGGING_SPEC",            "INFO");
+                                 put("CORE_PEER_TLS_ENABLED",          "true");
+                                 put("CORE_PEER_TLS_ROOTCERT_FILE",    "/var/hyperledger/fabric/xyzzy/org1-peer1.org1.example.com/tls/ca.crt");
+                                 put("CORE_PEER_ADDRESS",              "org1-peer1:7051");
+                                 put("CORE_PEER_LOCALMSPID",           "Org1MSP");
+                                 put("CORE_PEER_MSPCONFIGPATH",        "/var/hyperledger/fabric/xyzzy/Admin@org1.example.com/msp");
+                             }},
+
+                             ///
+                             // msp contexts unfurled by the pod's init container.
+                             //
+                             List.of(orderer1MSP,
+                                     org1Peer1MSP,
+                                     org1AdminMSP)
+                     ));
 
 
         //
         // Update the channel anchor peers
         //
-//        assertEquals(0,
-//                     execute(new PeerCommand("peer",
-//                                             "channel", "update",
-//                                             "-c", CHANNEL,
-//                                             "-o", "orderer1:6050",  // net config?
-//                                             "-f", "/var/hyperledger/fabric/channel-artifacts/Org1MSPanchors.tx",
-//                                             "--tls",
-//                                             "--cafile", "/var/hyperledger/fabric/xyzzy/orderer1.example.com/tls/ca.crt"),
-//
-//                             // k/v environment variables
-//                             new Environment()
-//                             {{
-//                                 put("FABRIC_LOGGING_SPEC",            "INFO");
-//                                 put("CORE_PEER_TLS_ENABLED",          "true");
-//                                 put("CORE_PEER_TLS_ROOTCERT_FILE",    "/var/hyperledger/fabric/xyzzy/org1-peer1.org1.example.com/tls/ca.crt");
-//                                 put("CORE_PEER_ADDRESS",              "org1-peer1:7051");
-//                                 put("CORE_PEER_LOCALMSPID",           "Org1MSP");
-//                                 put("CORE_PEER_MSPCONFIGPATH",        "/var/hyperledger/fabric/xyzzy/Admin@org1.example.com/msp");
-//                             }},
-//
-//                             ///
-//                             // msp contexts unfurled by the pod's init container.
-//                             //
-//                             List.of(orderer1MSP,
-//                                     org1peer1MSP,
-//                                     org1AdminMSP)
-//                     ));
+        assertEquals(0,
+                     execute(new PeerCommand("peer",
+                                             "channel", "update",
+                                             "-c", CHANNEL,
+                                             "-o", "orderer1:6050",  // net config?
+                                             "-f", "/var/hyperledger/fabric/channel-artifacts/Org1MSPanchors.tx",
+                                             "--tls",
+                                             "--cafile", "/var/hyperledger/fabric/xyzzy/orderer1.example.com/tls/ca.crt"),
 
+                             // k/v environment variables
+                             new Environment()
+                             {{
+                                 put("FABRIC_LOGGING_SPEC",            "INFO");
+                                 put("CORE_PEER_TLS_ENABLED",          "true");
+                                 put("CORE_PEER_TLS_ROOTCERT_FILE",    "/var/hyperledger/fabric/xyzzy/org1-peer1.org1.example.com/tls/ca.crt");
+                                 put("CORE_PEER_ADDRESS",              "org1-peer1:7051");
+                                 put("CORE_PEER_LOCALMSPID",           "Org1MSP");
+                                 put("CORE_PEER_MSPCONFIGPATH",        "/var/hyperledger/fabric/xyzzy/Admin@org1.example.com/msp");
+                             }},
 
+                             ///
+                             // msp contexts unfurled by the pod's init container.
+                             //
+                             List.of(orderer1MSP,
+                                     org1Peer1MSP,
+                                     org1AdminMSP)
+                     ));
 
 
 
@@ -222,8 +219,6 @@ public class CreateAndJoinChannelTest extends TestBase
                              }},
                              List.of(org1Peer2MSP,
                                      org1AdminMSP)));
-
-
 
 
 
