@@ -10,10 +10,7 @@ import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
@@ -37,17 +34,15 @@ import static org.junit.jupiter.api.Assertions.*;
  * fabctl to carefully shape the runtime context of peers, orderers, and CAs to
  * include both an environment scope frame and a set of MSP identities at runtime.
  *
- * todo: convert the README kubectl command to a dynamic cm constructor (fabric-config)
- * todo: create fabric-config CM from /config/* (move to test config resource bundle)
  * todo: add some metadata labels to the configmap (e.g. id, org, name, type, etc .etc. )
- * todo: organize the configmaps by "msp-<reverse-dns-name(msp.name)>"
  * todo: no xyzzy in the volume mount path
- * todo: support multiple MSP config mounts in a node volume mount
+ * todo: launch peers
+ * todo: refactor the Deployment, Service, and Job spec construction (v2 is OK)
  *
  * TEST OUTCOMES:
  *
- * - Unfurling MSP contexts into the node works OK.  It's a bit fiddly but better than mapping to/from flattened
- *   configmap keys/files.
+ * - Unfurling MSP contexts into the node works OK.  It's a bit fiddly but better than mapping to/from
+ *   flattened configmap keys/files.
  *
  * - What is a TLS context?  We need to map /tls/server.key, /tls/server.crt, and /tls/ca.crt into the node.
  *   For this test we will extend the MSP descriptor to include TWO top level nodes: 'tls' + 'msp', bundling
@@ -67,11 +62,9 @@ public class InitFabricNetworkTest extends TestBase
 
 
         //
-        // Create the fabric-config ConfigMap from local /conf/* resources.
+        // Create the fabric-config ConfigMap from local /conf/* files.
         //
-        // TODO: convert the README kubectl command to a dynamic configmap constructor.
-        //
-//        createFabricConfigConfigMap();
+        createFabricConfigConfigMap();
 
 
         //
@@ -127,7 +120,6 @@ public class InitFabricNetworkTest extends TestBase
             }
         }
 
-
         assertEquals(0,
                      execute(new ConfigTXGenCommand("configtxgen",
                                                     "-profile", "TwoOrgsOrdererGenesis",
@@ -138,7 +130,7 @@ public class InitFabricNetworkTest extends TestBase
 
 
         // todo: is this part of the network init, or the channel construction?
-        log.info("Setting anchor peers");
+        log.info("Setting Org1 anchor peer");
         assertEquals(0,
                      execute(new ConfigTXGenCommand("configtxgen",
                                                     "-profile", "TwoOrgsChannel",
@@ -150,6 +142,7 @@ public class InitFabricNetworkTest extends TestBase
 
 
         // todo: is this part of the network init, or the channel construction?
+        log.info("Setting Org2 anchor peer");
         assertEquals(0,
                      execute(new ConfigTXGenCommand("configtxgen",
                                                     "-profile",                 "TwoOrgsChannel",
@@ -522,4 +515,35 @@ public class InitFabricNetworkTest extends TestBase
     }
 
 
+    /**
+     * Just a nice convenience: create "fabric-conf" config map from the top level FILES
+     * in the /config project folder.  This includes configtx.yaml, core.yaml, crypto-config.yaml,
+     * and orderer.yaml.
+     *
+     */
+    private ConfigMap createFabricConfigConfigMap() throws Exception
+    {
+        final Map<String, String> data = new TreeMap<>();
+
+        for (final File file : new File("config").listFiles())
+        {
+            if (file.isFile())
+            {
+                data.put(file.getName(), load(file));
+            }
+        }
+
+        final ConfigMap cm =
+                client.configMaps()
+                      .createOrReplace(new ConfigMapBuilder()
+                                               .withNewMetadata()
+                                               .withName("fabric-config")
+                                               .endMetadata()
+                                               .withData(data)
+                                               .build());
+
+        log.info("Created config map\n{}", cm.getMetadata().getName());
+
+        return cm;
+    }
 }
