@@ -138,7 +138,7 @@ public class TestBase
 
     protected Job buildRemoteJob(final FabricCommand command,
                                  final Map<String,String> context,
-                                 final MSPDescriptor[] msps)
+                                 final MSPDescriptor... msps)
     {
         final List<EnvVar> env = new ArrayList<>();
         for (Entry<String, String> e : context.entrySet())

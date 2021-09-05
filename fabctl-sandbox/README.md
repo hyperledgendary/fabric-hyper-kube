@@ -20,6 +20,7 @@ routines may be refactored into CLIs, service APIs, or eventually into a fully-f
 kind create cluster
 kind load docker-image hyperledgendary/fabric-ccs-builder
 kind load docker-image hyperledger/chaincode/asset-transfer-basic
+kind load docker-image hyperledgendary/fabric-hyper-kube/fabctl-msp-unfurler
 ```
 
 ```shell
@@ -61,7 +62,7 @@ docker run \
 ```shell
 echo -n | ./gradlew test --tests org.hyperledger.fabric.fabctl.v1.InitFabricNetworkTest      # network.sh up 
 echo -n | ./gradlew test --tests org.hyperledger.fabric.fabctl.v1.CreateAndJoinChannelTest   # network.sh createChannel
-# echo -n | ./gradlew test --tests ChaincodeSandboxTest       # network.sh deployCC 
+echo -n | ./gradlew test --tests org.hyperledger.fabric.fabctl.v1.ChaincodeSandboxTest       # network.sh deployCC 
 ```
 
 #### v2
