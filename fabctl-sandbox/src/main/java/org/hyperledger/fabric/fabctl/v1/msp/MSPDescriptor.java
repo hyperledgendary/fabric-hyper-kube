@@ -28,17 +28,24 @@ public class MSPDescriptor
     public final String name;
     public final String id;
     public final JsonNode msp;
+    public final JsonNode tls;
 
     public MSPDescriptor(final String name, final File basedir) throws IOException
     {
         this.name = name;
         this.id = basedir.getName();
         this.msp = helper(new File(basedir, "msp"));
+        this.tls = helper(new File(basedir, "tls"));
     }
 
     private JsonNode helper(final File f) throws IOException
     {
-        if (f.isDirectory())
+        if (! f.exists())
+        {
+            // e.g.. no 'tls' folder under root folder.
+            return null;
+        }
+        else if (f.isDirectory())
         {
             final ObjectNode node = objectMapper.createObjectNode();
 

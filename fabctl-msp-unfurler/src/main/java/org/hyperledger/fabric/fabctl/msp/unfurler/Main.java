@@ -85,10 +85,17 @@ public class Main
         }
 
         unfurl(new File(mspDir, "msp"), node.get("msp"));
+        unfurl(new File(mspDir, "tls"), node.get("tls"));
     }
 
     private static void unfurl(final File f, final JsonNode node) throws IOException
     {
+        // no node?  no unfurling
+        if (node == null)
+        {
+            return;
+        }
+
         if (node.isTextual())
         {
             log.info("writing {}", f);

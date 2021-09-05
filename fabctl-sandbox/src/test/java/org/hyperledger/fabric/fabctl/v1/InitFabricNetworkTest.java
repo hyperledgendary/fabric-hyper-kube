@@ -48,8 +48,13 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * TEST OUTCOMES:
  *
- * - ???
+ * - Unfurling MSP contexts into the node works OK.  It's a bit fiddly but better than mapping to/from flattened
+ *   configmap keys/files.
  *
+ * - What is a TLS context?  We need to map /tls/server.key, /tls/server.crt, and /tls/ca.crt into the node.
+ *   For this test we will extend the MSP descriptor to include TWO top level nodes: 'tls' + 'msp', bundling
+ *   both directories into the same descriptor.  This will be addressed properly in the next iteration when
+ *   we migrate from cryptogen to CA + fabric-ca-client.
  */
 @Slf4j
 public class InitFabricNetworkTest extends TestBase

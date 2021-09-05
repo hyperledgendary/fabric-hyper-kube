@@ -1,0 +1,62 @@
+---
+name: "org2-peer2.org1.example.com"
+id: "org2-peer2.org2.example.com"
+msp:
+  keystore:
+    priv_sk: "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgkn8kbcoTh95MvgfO\n\
+          Jfhl+V/PDH5yFSsahsLqU3bdJCuhRANCAASjUpqHxu24htwRuyJxfiDXSnNwXCJa\nP0XO2bhmkl5hX8njGnCDB/D6ApAg8N2bg3CWihaoODJm8J4Wy3qFKQZP\n\
+          -----END PRIVATE KEY-----\n"
+  config.yaml: "NodeOUs:\n  Enable: true\n  ClientOUIdentifier:\n    Certificate:\
+        \ cacerts/ca.org2.example.com-cert.pem\n    OrganizationalUnitIdentifier: client\n\
+        \  PeerOUIdentifier:\n    Certificate: cacerts/ca.org2.example.com-cert.pem\n\
+        \    OrganizationalUnitIdentifier: peer\n  AdminOUIdentifier:\n    Certificate:\
+        \ cacerts/ca.org2.example.com-cert.pem\n    OrganizationalUnitIdentifier: admin\n\
+        \  OrdererOUIdentifier:\n    Certificate: cacerts/ca.org2.example.com-cert.pem\n\
+        \    OrganizationalUnitIdentifier: orderer\n"
+  admincerts: {}
+  tlscacerts:
+    tlsca.org2.example.com-cert.pem: "-----BEGIN CERTIFICATE-----\nMIICVjCCAf2gAwIBAgIQC8U+KzCCbD7VbF56qqDH0TAKBggqhkjOPQQDAjB2MQsw\n\
+          CQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMNU2FuIEZy\nYW5jaXNjbzEZMBcGA1UEChMQb3JnMi5leGFtcGxlLmNvbTEfMB0GA1UEAxMWdGxz\n\
+          Y2Eub3JnMi5leGFtcGxlLmNvbTAeFw0yMTA4MzExNDM0MDBaFw0zMTA4MjkxNDM0\nMDBaMHYxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQH\n\
+          Ew1TYW4gRnJhbmNpc2NvMRkwFwYDVQQKExBvcmcyLmV4YW1wbGUuY29tMR8wHQYD\nVQQDExZ0bHNjYS5vcmcyLmV4YW1wbGUuY29tMFkwEwYHKoZIzj0CAQYIKoZIzj0D\n\
+          AQcDQgAE+Ge7GT1KO1iG+SOgYENEBzO1i1zaO26+mxpN9yJuBhdyrPMJe3mnvIVq\nBvEpXSwMqNis/JzYmDYpd24pNtmj5KNtMGswDgYDVR0PAQH/BAQDAgGmMB0GA1Ud\n\
+          JQQWMBQGCCsGAQUFBwMCBggrBgEFBQcDATAPBgNVHRMBAf8EBTADAQH/MCkGA1Ud\nDgQiBCDwFs8Sj2EOuZVwsMR3W/bgs2ZKgxLoD6iljkZuRe2LpjAKBggqhkjOPQQD\n\
+          AgNHADBEAiAcVV7MLCbw+bGZi+bM1fZeO0T2ZSFgqgm62gQpjR2WTQIgJr9p82yl\nb3y7DRKEMD+PCOvQTOc5dOKcUtu+kyr+yyA=\n\
+          -----END CERTIFICATE-----\n"
+  cacerts:
+    ca.org2.example.com-cert.pem: "-----BEGIN CERTIFICATE-----\nMIICUDCCAfegAwIBAgIQBc6wEySBw1QWYg7kihS7aDAKBggqhkjOPQQDAjBzMQsw\n\
+          CQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMNU2FuIEZy\nYW5jaXNjbzEZMBcGA1UEChMQb3JnMi5leGFtcGxlLmNvbTEcMBoGA1UEAxMTY2Eu\n\
+          b3JnMi5leGFtcGxlLmNvbTAeFw0yMTA4MzExNDM0MDBaFw0zMTA4MjkxNDM0MDBa\nMHMxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQHEw1T\n\
+          YW4gRnJhbmNpc2NvMRkwFwYDVQQKExBvcmcyLmV4YW1wbGUuY29tMRwwGgYDVQQD\nExNjYS5vcmcyLmV4YW1wbGUuY29tMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE\n\
+          J8ysBhKKMfDXN0Jqm/G8MwYgs+Tmtqjsx2P+SM76a1dUaWqTg7d0n4WoP+H182f1\nrN+0xPmAjimVE77mqgsiqKNtMGswDgYDVR0PAQH/BAQDAgGmMB0GA1UdJQQWMBQG\n\
+          CCsGAQUFBwMCBggrBgEFBQcDATAPBgNVHRMBAf8EBTADAQH/MCkGA1UdDgQiBCDh\nXUICRzgy/RzjmNz4sJHLKmLeOVW8tMOsReTNhzACRDAKBggqhkjOPQQDAgNHADBE\n\
+          AiANZnrTvznZsNAx/24eOyPOHA9uX/7WqZetukW4AYIQTQIgByTi+uDqwwFLnEVe\nm7VmRYm/x/m13EeWXdAprl536iE=\n\
+          -----END CERTIFICATE-----\n"
+  signcerts:
+    org2-peer2.org2.example.com-cert.pem: "-----BEGIN CERTIFICATE-----\nMIICLDCCAdOgAwIBAgIQPwL4x5FN8cbAVe1r/HTiCjAKBggqhkjOPQQDAjBzMQsw\n\
+          CQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMNU2FuIEZy\nYW5jaXNjbzEZMBcGA1UEChMQb3JnMi5leGFtcGxlLmNvbTEcMBoGA1UEAxMTY2Eu\n\
+          b3JnMi5leGFtcGxlLmNvbTAeFw0yMTA4MzExNDM0MDBaFw0zMTA4MjkxNDM0MDBa\nMG8xCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQHEw1T\n\
+          YW4gRnJhbmNpc2NvMQ0wCwYDVQQLEwRwZWVyMSQwIgYDVQQDExtvcmcyLXBlZXIy\nLm9yZzIuZXhhbXBsZS5jb20wWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASjUpqH\n\
+          xu24htwRuyJxfiDXSnNwXCJaP0XO2bhmkl5hX8njGnCDB/D6ApAg8N2bg3CWihao\nODJm8J4Wy3qFKQZPo00wSzAOBgNVHQ8BAf8EBAMCB4AwDAYDVR0TAQH/BAIwADAr\n\
+          BgNVHSMEJDAigCDhXUICRzgy/RzjmNz4sJHLKmLeOVW8tMOsReTNhzACRDAKBggq\nhkjOPQQDAgNHADBEAiB2yYFpZGkaOl5GuQ1nNfCj5RZNpqoor2Cj0fbMs6w1dwIg\n\
+          UWIcs4QVZXMvPrQuQvp1kVKzKEH+EwhRuDB1GBxSv0c=\n-----END CERTIFICATE-----\n"
+tls:
+  server.key: "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgFO23Zk6k6SbHJ6Y8\n\
+        CoKlAM+uirnAF+M5h1Kk/FPYDOuhRANCAATdKWXOIhQLIZMY/Z0ns9BYy+m/cBiW\n0J7Bym/e3eqStPFwrj6GBEWzYB2s7cpjew6X7QY0g8xx3WyG88Ak2J3E\n\
+        -----END PRIVATE KEY-----\n"
+  ca.crt: "-----BEGIN CERTIFICATE-----\nMIICVjCCAf2gAwIBAgIQC8U+KzCCbD7VbF56qqDH0TAKBggqhkjOPQQDAjB2MQsw\n\
+        CQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMNU2FuIEZy\nYW5jaXNjbzEZMBcGA1UEChMQb3JnMi5leGFtcGxlLmNvbTEfMB0GA1UEAxMWdGxz\n\
+        Y2Eub3JnMi5leGFtcGxlLmNvbTAeFw0yMTA4MzExNDM0MDBaFw0zMTA4MjkxNDM0\nMDBaMHYxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQH\n\
+        Ew1TYW4gRnJhbmNpc2NvMRkwFwYDVQQKExBvcmcyLmV4YW1wbGUuY29tMR8wHQYD\nVQQDExZ0bHNjYS5vcmcyLmV4YW1wbGUuY29tMFkwEwYHKoZIzj0CAQYIKoZIzj0D\n\
+        AQcDQgAE+Ge7GT1KO1iG+SOgYENEBzO1i1zaO26+mxpN9yJuBhdyrPMJe3mnvIVq\nBvEpXSwMqNis/JzYmDYpd24pNtmj5KNtMGswDgYDVR0PAQH/BAQDAgGmMB0GA1Ud\n\
+        JQQWMBQGCCsGAQUFBwMCBggrBgEFBQcDATAPBgNVHRMBAf8EBTADAQH/MCkGA1Ud\nDgQiBCDwFs8Sj2EOuZVwsMR3W/bgs2ZKgxLoD6iljkZuRe2LpjAKBggqhkjOPQQD\n\
+        AgNHADBEAiAcVV7MLCbw+bGZi+bM1fZeO0T2ZSFgqgm62gQpjR2WTQIgJr9p82yl\nb3y7DRKEMD+PCOvQTOc5dOKcUtu+kyr+yyA=\n\
+        -----END CERTIFICATE-----\n"
+  server.crt: "-----BEGIN CERTIFICATE-----\nMIICfDCCAiKgAwIBAgIQK2/RNima9tzczlVLqDCr9TAKBggqhkjOPQQDAjB2MQsw\n\
+        CQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMNU2FuIEZy\nYW5jaXNjbzEZMBcGA1UEChMQb3JnMi5leGFtcGxlLmNvbTEfMB0GA1UEAxMWdGxz\n\
+        Y2Eub3JnMi5leGFtcGxlLmNvbTAeFw0yMTA4MzExNDM0MDBaFw0zMTA4MjkxNDM0\nMDBaMGAxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQH\n\
+        Ew1TYW4gRnJhbmNpc2NvMSQwIgYDVQQDExtvcmcyLXBlZXIyLm9yZzIuZXhhbXBs\nZS5jb20wWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAATdKWXOIhQLIZMY/Z0ns9BY\n\
+        y+m/cBiW0J7Bym/e3eqStPFwrj6GBEWzYB2s7cpjew6X7QY0g8xx3WyG88Ak2J3E\no4GnMIGkMA4GA1UdDwEB/wQEAwIFoDAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYB\n\
+        BQUHAwIwDAYDVR0TAQH/BAIwADArBgNVHSMEJDAigCDwFs8Sj2EOuZVwsMR3W/bg\ns2ZKgxLoD6iljkZuRe2LpjA4BgNVHREEMTAvghtvcmcyLXBlZXIyLm9yZzIuZXhh\n\
+        bXBsZS5jb22CCm9yZzItcGVlcjKHBAAAAAAwCgYIKoZIzj0EAwIDSAAwRQIhAMTC\nwOwxzAuQtbCK2YmcL4IemVXvszmEvutshQrsvLK0AiAwO7T6qUP3Yt5zepMbPmmE\n\
+        ueE8s6dHDHJW+7FUvndK9Q==\n-----END CERTIFICATE-----\n"
