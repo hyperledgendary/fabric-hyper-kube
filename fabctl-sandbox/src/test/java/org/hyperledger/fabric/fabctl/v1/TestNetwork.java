@@ -86,6 +86,7 @@ class TestNetwork extends NetworkConfig
                                            new MSPDescriptor("msp-com.example.org1",
                                                              new File("config/crypto-config/peerOrganizations/org1.example.com")));
 
+
             //
             // This is an awful hack but org1-peer1 needs an org Admin context MSP in order to run the CLI (cc query from shell)
             /// AND it needs the orderer1 tls/ca.crt...

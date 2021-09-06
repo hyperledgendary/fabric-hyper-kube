@@ -18,9 +18,11 @@ routines may be refactored into CLIs, service APIs, or eventually into a fully-f
 
 ```shell
 kind create cluster
-kind load docker-image hyperledgendary/fabric-ccs-builder
+
 kind load docker-image hyperledger/chaincode/asset-transfer-basic
+kind load docker-image hyperledgendary/fabric-ccs-builder
 kind load docker-image hyperledgendary/fabric-hyper-kube/fabctl-msp-unfurler
+kind load docker-image hyperledgendary/fabric-rest-sample
 ```
 
 ```shell
@@ -28,6 +30,11 @@ kubectl create -f src/test/resources/kube/pv-fabric.yaml
 kubectl create -f src/test/resources/kube/ns-test-network.yaml
 kubectl -n test-network create -f src/test/resources/kube/pvc-fabric.yaml
 ```
+
+- TODO: add doc pointers on where/how to build local Docker images 
+- TODO: add an nginx ingress controller to KIND cluster 
+- TODO: add a kustomization base and overlays for installation to KIND, IKS, and OCP (pvc + ingress) 
+
 
 ### Test Network
 
@@ -74,7 +81,25 @@ exit
 
 ### REST Easy 
 
-- TODO: deploy the fabric-rest-sample and a connection profile for access to the ledgers via REST entrypoints.
+```shell
+echo -n | ./gradlew test --tests org.hyperledger.fabric.fabctl.v1.FabricRESTSampleTest
+```
+
+Open a port forward to the REST sample service in a new shell: 
+```shell
+kubectl -n test-network port-forward svc/fabric-rest-sample 3000:3000
+```
+
+Follow the HTTP examples from [fabric-rest-sample](https://github.com/hyperledgendary/fabric-rest-sample)
+```shell
+export SAMPLE_APIKEY=97834158-3224-4CE7-95F9-A148C886653E
+
+curl --header "X-Api-Key: ${SAMPLE_APIKEY}" http://localhost:3000/api/assets | jq
+```
+
+
+
+- TODO: Run the rest endpoint locally (docker/main()/...) and connect via ingress or port-forward
 
 
 ## Teardown
