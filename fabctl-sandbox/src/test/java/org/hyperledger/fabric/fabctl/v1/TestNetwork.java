@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  * - Where will users / enrollments / registrations occur and be stored?
  *
  * - It seems like MSP descriptors should be REFERENCED not embedded in this structure.  Something inspired from k8s
- *   such as kube references (envFrom, secretRef, configMapRef, or Argo workflowRef,... ) 
+ *   such as kube references (envFrom, secretRef, configMapRef, or Argo workflowRef,... )
  *
  */
 class TestNetwork extends NetworkConfig
