@@ -14,6 +14,14 @@ routines may be refactored into CLIs, service APIs, or eventually into a fully-f
 
 ## Quickstart 
 
+### Prereqs 
+
+- Build [fabric-ccs-builder](https://github.com/jkneubuh/fabric-samples/tree/feature/kind-test-network/test-network-kind#fabric-ccs-builder) docker image 
+- Build [fabctl-msp-unfurler](../fabctl-msp-unfurler#build) docker image
+- Build [fabric-rest-sample](https://github.com/hyperledgendary/fabric-rest-sample#docker-image) docker image
+- Build [asset-transfer-basic](https://github.com/hyperledgendary/fabric-rest-sample#docker-image) docker image
+
+
 ### Kube
 
 ```shell
