@@ -50,7 +50,6 @@ echo -n | ./gradlew test --tests org.hyperledger.fabric.fabctl.v1.ChaincodeSandb
 
 ### Chaincode Query 
 
-open a shell to org1-peer1 and:
 ```shell
 kubectl -n test-network exec deploy/org1-peer1 -i -t -- /bin/sh
 # export CORE_PEER_MSPCONFIGPATH=/var/hyperledger/fabric/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp  # v0
