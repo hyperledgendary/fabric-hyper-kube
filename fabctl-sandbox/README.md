@@ -70,8 +70,10 @@ sleep 5
 
 peer chaincode query -C mychannel -n basic -c '{"Args":["ReadAsset","1"]}'
 
-# exit
+exit
 ```
+
+### REST Easy 
 
 - TODO: deploy the fabric-rest-sample and a connection profile for access to the ledgers via REST entrypoints.
 
