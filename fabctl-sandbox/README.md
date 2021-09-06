@@ -97,7 +97,7 @@ Open a port forward to the REST sample service in a new shell:
 kubectl -n test-network port-forward svc/fabric-rest-sample 3000:3000
 ```
 
-Follow the HTTP examples from [fabric-rest-sample](https://github.com/hyperledgendary/fabric-rest-sample)
+Follow the HTTP examples from [fabric-rest-sample](https://github.com/hyperledgendary/fabric-rest-sample#rest-api)
 ```shell
 export SAMPLE_APIKEY=97834158-3224-4CE7-95F9-A148C886653E
 
