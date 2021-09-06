@@ -32,6 +32,7 @@ kubectl -n test-network create -f src/test/resources/kube/pvc-fabric.yaml
 ### Test Network
 
 ```shell
+rm -rf config/crypto-config/
 docker run \
   --rm \
   -v ${PWD}/config:/config \
@@ -86,7 +87,6 @@ kubectl -n test-network delete secret --all
 kubectl -n test-network create -f src/test/resources/kube/job-scrub-test-network.yaml
 kubectl -n test-network wait --for=condition=complete --timeout=60s job/job-scrub-fabric-volume
 kubectl -n test-network delete job --all
-rm -rf config/crypto-config/
 ```
 [GOTO Network](#test-network)
 
