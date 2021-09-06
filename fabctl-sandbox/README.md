@@ -66,8 +66,7 @@ echo -n | ./gradlew test --tests org.hyperledger.fabric.fabctl.v1.ChaincodeSandb
 
 ```shell
 kubectl -n test-network exec deploy/org1-peer1 -i -t -- /bin/sh
-# export CORE_PEER_MSPCONFIGPATH=/var/hyperledger/fabric/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp  # v0
-export CORE_PEER_MSPCONFIGPATH=/var/hyperledger/fabric/xyzzy/Admin@org1.example.com/msp  #v1 
+export CORE_PEER_MSPCONFIGPATH=/var/hyperledger/fabric/xyzzy/Admin@org1.example.com/msp 
 export FABRIC_LOGGING_SPEC=INFO
 
 peer chaincode \
@@ -146,6 +145,27 @@ kubectl -n test-network wait --for=condition=complete --timeout=120s job/job-cry
 echo -n | ./gradlew test --tests org.hyperledger.fabric.fabctl.v0.InitFabricNetworkTest      # network.sh up 
 echo -n | ./gradlew test --tests org.hyperledger.fabric.fabctl.v0.CreateAndJoinChannelTest   # network.sh createChannel
 echo -n | ./gradlew test --tests org.hyperledger.fabric.fabctl.v0.ChaincodeSandboxTest       # network.sh deployCC 
+```
+
+```shell
+kubectl -n test-network exec deploy/org1-peer1 -i -t -- /bin/sh
+export CORE_PEER_MSPCONFIGPATH=/var/hyperledger/fabric/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp 
+export FABRIC_LOGGING_SPEC=INFO
+
+peer chaincode \
+  invoke \
+  -o orderer1:6050 \
+  -C mychannel \
+  -n basic \
+  -c '{"Args":["CreateAsset","1","blue","35","tom","1000"]}' \
+  --tls \
+  --cafile /var/hyperledger/fabric/crypto-config/ordererOrganizations/example.com/orderers/orderer1.example.com/tls/ca.crt 
+
+sleep 5
+
+peer chaincode query -C mychannel -n basic -c '{"Args":["ReadAsset","1"]}'
+
+exit
 ```
 
 ### v1
