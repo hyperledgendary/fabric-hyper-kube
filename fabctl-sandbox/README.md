@@ -77,7 +77,7 @@ exit
 - TODO: deploy the fabric-rest-sample and a connection profile for access to the ledgers via REST entrypoints.
 
 
-## Teardown 
+## Teardown
 
 ```shell
 kubectl -n test-network delete deployment --all 
