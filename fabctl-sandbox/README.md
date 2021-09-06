@@ -39,7 +39,6 @@ kubectl create -f src/test/resources/kube/ns-test-network.yaml
 kubectl -n test-network create -f src/test/resources/kube/pvc-fabric.yaml
 ```
 
-- TODO: add doc pointers on where/how to build local Docker images 
 - TODO: add an nginx ingress controller to KIND cluster 
 - TODO: add a kustomization base and overlays for installation to KIND, IKS, and OCP (pvc + ingress) 
 
