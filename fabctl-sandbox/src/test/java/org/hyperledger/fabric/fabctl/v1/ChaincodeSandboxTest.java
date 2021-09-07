@@ -132,7 +132,7 @@ public class ChaincodeSandboxTest extends TestBase
         final ChaincodeMetadata metadata = new ChaincodeMetadata();
         metadata.name = "asset-transfer-basic";
         metadata.label = "basic_1.0";
-        metadata.image = "hyperledger/chaincode/asset-transfer-basic"; // "localhost:5000/chaincode/asset-transfer-basic";  // why is this broken on KIND?
+        metadata.image = "hyperledger/asset-transfer-basic"; // "localhost:5000/chaincode/asset-transfer-basic";  // why is this broken on KIND?
         metadata.description = "Basic Asset Transfer Example";
         metadata.author = "Allen Smithee";
         // metadata.project_url = new URL("https://github.com/hyperledger/fabric-samples/tree/main/asset-transfer-basic/chaincode-external");
